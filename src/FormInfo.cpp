@@ -1,4 +1,4 @@
-#include "FormInfo.hpp"
+#include "../include/FormInfo.hpp"
 
 FormInfo::FormInfo()
 {
@@ -14,28 +14,45 @@ FormInfo::~FormInfo()
 
 Form FormInfo::getForm() const
 {
-    return Form();
+    return m_form;
 }
 
 int FormInfo::getNumberOfElements() const
 {
-    return 0;
+    return m_numberOfElements;
 }
 
 Node *FormInfo::getFirstElement() const
 {
-    return nullptr;
+    return m_firstElement;
 }
 
-void FormInfo::setForm(Form)
+void FormInfo::setForm(Form form)
 {
+    m_form = form;
 }
 
-void FormInfo::setNumberOfElements(int)
+void FormInfo::setNumberOfElements(int numberOfElements)
 {
+    m_numberOfElements = numberOfElements;
 }
 
-void FormInfo::setFirstElement(Node *)
+void FormInfo::setFirstElement(Node *firstElement)
 {
+    m_firstElement = firstElement;
+}
+
+
+void FormInfo::incrementNumberOfElements()
+{
+    m_numberOfElements++;
+}
+
+void FormInfo::decrementNumberOfElements()
+{
+    if (m_numberOfElements > 0)
+    {
+        m_numberOfElements--;
+    }
 }
 

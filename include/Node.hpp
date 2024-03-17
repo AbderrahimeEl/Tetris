@@ -1,7 +1,7 @@
-#include "Piece.hpp"
-
 #ifndef NODE_HPP
 #define NODE_HPP
+
+#include "Piece.hpp"
 
 class Node
 {
@@ -15,7 +15,7 @@ private:
 
 public:
     Node();
-    Node(Node *m_nextNode, Node *m_nextColor, Node *m_previousColor, Node *m_nextForm, Node *m_previousForm);
+    Node(Node *nextNode, Node *nextColor, Node *previousColor, Node *nextForm, Node *previousForm);
     ~Node();
     Piece *getPiece() const;
     Node *getNextNode() const;

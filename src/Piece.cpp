@@ -1,5 +1,4 @@
 #include "../include/Piece.hpp"
-#include "Piece.hpp"
 
 Piece::Piece()
 {

@@ -1,10 +1,10 @@
-#include "ColorInfo.hpp"
+#include "../include/ColorInfo.hpp"
 
-ColorInfo::ColorInfo()
+ColorInfo::ColorInfo() :m_numberOfElements(0), m_firstElement(nullptr)
 {
 }
 
-ColorInfo::ColorInfo(Color color, int numberOfElements, Node *firstElement)
+ColorInfo::ColorInfo(Color color, int numberOfElements, Node *firstElement) : m_color(color), m_numberOfElements(numberOfElements), m_firstElement(firstElement)
 {
 }
 
@@ -12,30 +12,45 @@ ColorInfo::~ColorInfo()
 {
 }
 
-
 Color ColorInfo::getColor() const
 {
-    return Color();
+    return m_color;
 }
 
 Node *ColorInfo::getFirstElement() const
 {
-    return nullptr;
+    return m_firstElement;
 }
 
 int ColorInfo::getNumberOfElements() const
 {
-    return 0;
+    return m_numberOfElements;
 }
 
-void ColorInfo::setColor(Color)
+void ColorInfo::setColor(Color color)
 {
+    m_color = color;
 }
 
-void ColorInfo::setNumberOfElements(int)
+void ColorInfo::setNumberOfElements(int numberOfElements)
 {
+    m_numberOfElements = numberOfElements;
 }
 
 void ColorInfo::setFirstElement(Node *)
 {
+    m_firstElement = m_firstElement;
+}
+
+void ColorInfo::incrementNumberOfElements()
+{
+    m_numberOfElements++;
+}
+
+void ColorInfo::decrementNumberOfElements()
+{
+    if (m_numberOfElements > 0)
+    {
+        m_numberOfElements--;
+    }
 }

@@ -1,15 +1,15 @@
-#include "Piece.hpp"
-#include "Node.hpp"
-
 #ifndef COLOR_INFO_HPP
 #define COLOR_INFO_HPP
+
+#include "Piece.hpp"
+#include "Node.hpp"
 
 class ColorInfo
 {
 private:
-    Color color;
-    int numberOfElements;
-    Node *firstElement;
+    Color m_color;
+    int m_numberOfElements;
+    Node *m_firstElement;
 
 public:
     ColorInfo();
@@ -18,9 +18,11 @@ public:
     Color getColor() const;
     Node *getFirstElement() const;
     int getNumberOfElements() const;
-    void setColor(Color);
+    void setColor(Color color);
     void setNumberOfElements(int);
     void setFirstElement(Node *);
+    void incrementNumberOfElements();
+    void decrementNumberOfElements();
 };
 
 #endif
