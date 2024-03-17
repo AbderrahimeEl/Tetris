@@ -14,7 +14,7 @@ int main()
         std::cout << "S : " << plateau.getForms()[static_cast<int>(Form::SQUARE)].getNumberOfElements() << "| ";
         std::cout << "T : " << plateau.getForms()[static_cast<int>(Form::TRIANGLE)].getNumberOfElements() << "| ";
         std::cout << "R : " << plateau.getForms()[static_cast<int>(Form::RHOMBUS)].getNumberOfElements() << "|| ";
-        
+
         std::cout << "b : " << plateau.getColors()[static_cast<int>(Color::BLUE)].getNumberOfElements() << "| ";
         std::cout << "r : " << plateau.getColors()[static_cast<int>(Color::RED)].getNumberOfElements() << "| ";
         std::cout << "g : " << plateau.getColors()[static_cast<int>(Color::GREEN)].getNumberOfElements() << "| ";
@@ -41,8 +41,20 @@ int main()
             std::cout << "#";
         }
 
-        std::getchar();
-        plateau.insertLeft();
+        // std::getchar();
+            // plateau.insertLeft();
+
+        char choice;
+        std::cin >> choice;
+
+        if (choice == 'j')
+        {
+            plateau.insertLeft();
+        }
+        else if (choice == 'k')
+        {
+            plateau.insertRight();
+        }
     }
 }
 
@@ -70,7 +82,7 @@ void printPiece(Piece piece)
     //     form = '#';
     //     break;
     // }
-    
+
     // switch (piece.getColor())
     // {
     // case Color::RED:
@@ -132,5 +144,5 @@ void printPiece(Piece piece)
     }
 
     // std::cout << color << form << ANSI_COLOR_RESET;
-    std::cout << "("<< form << "/" << color << ")";
+    std::cout << "(" << form << "/" << color << ")";
 }

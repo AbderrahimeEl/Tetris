@@ -76,131 +76,163 @@ void Plateau::insertLeft()
         if (m_size == 0)
         {
             // (1) nodes list
-            // set tail = insertedNode
             m_tail = insertedNode;
-
-            // set next for insertedNode to null
             insertedNode->setNextNode(insertedNode);
 
             // (2) color
-            // (2.1) update the colors doubly linked List
-            // set nextColor for insertedNode to insertedNode
             insertedNode->setNextColor(insertedNode);
-            // set previousColor for insertedNode to insertedNode
             insertedNode->setPreviousColor(insertedNode);
 
-            // (2.2) update the colorInfo List
-            // set pointer for colorInfo to insertedNode
             int index = static_cast<int>(insertedNode->getPiece()->getColor());
             m_colorInfo[index].setFirstElement(insertedNode);
-            // increase color count
             m_colorInfo[index].incrementNumberOfElements();
 
             // (3) form
-            // (3.1) update the forms doubly linked List
-            // set nextForm for insertedNode to insertedNode
             insertedNode->setNextForm(insertedNode);
-            // set previousForm for insertedNode to insertedNode
             insertedNode->setPreviousForm(insertedNode);
 
-            // (3.2) update the formInfo List
-            // set pointer for formInfo to insertedNode
             index = static_cast<int>(insertedNode->getPiece()->getForm());
             m_formInfo[index].setFirstElement(insertedNode);
-            // increase form count
             m_formInfo[index].incrementNumberOfElements();
         }
         else
         {
-            // else
             // (1) nodes list
-            // set next for insertedNode to tail.next
             insertedNode->setNextNode(m_tail->getNextNode());
-            // set next for tail to insertedNode
             m_tail->setNextNode(insertedNode);
 
-            // // (2) color
-            // // if insertedNode.color.count == 0 // the first update our colorInfo List
+            // (2) color
             int index = static_cast<int>(insertedNode->getPiece()->getColor());
-            // m_colorInfo[index].setFirstElement(insertedNode);
 
             if (m_colorInfo[index].getNumberOfElements() == 0)
             {
-                // (2.1) colorInfo list
-                // set this on to be tail
                 m_colorInfo[index].setFirstElement(insertedNode);
 
-                // (2.2) color list
-                // set nextColor for insertedNode to insertedNode
                 insertedNode->setNextColor(insertedNode);
-                // set previousColor for insertedNode to insertedNode
                 insertedNode->setPreviousColor(insertedNode);
             }
             else
             {
-                // else // the other one is the tail
-                // (2.2) color list
-                // set nextColor for insertedNode to tail->nextColor
-                insertedNode->setNextColor(m_tail->getNextColor());
-
-                // set previous for tail->next to insertedNode
-                m_tail->getNextColor()->setPreviousColor(insertedNode);
-
-                // set next for tail to insertedNode
-                m_tail->setNextColor(insertedNode);
-                // set previous for insertedNode to tail
-                insertedNode->setPreviousColor(m_tail);
+                insertedNode->setNextColor(m_colorInfo[index].getFirstElement()->getNextColor());
+                m_colorInfo[index].getFirstElement()->getNextColor()->setPreviousColor(insertedNode);
+                m_colorInfo[index].getFirstElement()->setNextColor(insertedNode);
+                insertedNode->setPreviousColor(m_colorInfo[index].getFirstElement());
             }
 
-            // increase color count
             m_colorInfo[index].incrementNumberOfElements();
 
             // (3) form
-            // if insertedNode.form.count == 0 // the first update our colorInfo List
             index = static_cast<int>(insertedNode->getPiece()->getForm());
-            m_formInfo[index].setFirstElement(insertedNode);
 
             if (m_formInfo[index].getNumberOfElements() == 0)
             {
-                // (2.1) FormInfo list
-                // set this on to be tail
                 m_formInfo[index].setFirstElement(insertedNode);
 
-                // (2.2) form list
-                // set nextForm for insertedNode to insertedNode
                 insertedNode->setNextForm(insertedNode);
-                // set previousForm for insertedNode to insertedNode
                 insertedNode->setPreviousForm(insertedNode);
             }
             else
             {
-                // else // the other one is the tail
-                // (2.2) form list
-                // set nextForm for insertedNode to tail->nextForm
-                insertedNode->setNextForm(m_tail->getNextForm());
-
-                // set previous for tail->next to insertedNode
-                m_tail->getNextForm()->setPreviousForm(insertedNode);
-
-                // set next for tail to insertedNode
-                m_tail->setNextForm(insertedNode);
-                // set previous for insertedNode to tail
-                insertedNode->setPreviousForm(m_tail);
+                insertedNode->setNextForm(m_formInfo[index].getFirstElement()->getNextForm());
+                m_formInfo[index].getFirstElement()->getNextForm()->setPreviousForm(insertedNode);
+                m_formInfo[index].getFirstElement()->setNextForm(insertedNode);
+                insertedNode->setPreviousForm(m_formInfo[index].getFirstElement());
             }
 
-            // increase form count
             m_formInfo[index].incrementNumberOfElements();
         }
 
-        // increase size
         m_size++;
-
         m_nextPieceToInsert = generateNextPiece();
     }
 }
 
 void Plateau::insertRight()
 {
+    if (m_size < MAX_SIZE)
+    {
+        Node *insertedNode = new Node();
+        insertedNode->setPiece(m_nextPieceToInsert);
+
+        if (m_size == 0)
+        {
+            // (1) nodes list
+            m_tail = insertedNode;
+            insertedNode->setNextNode(insertedNode);
+
+            // (2) color
+            insertedNode->setNextColor(insertedNode);
+            insertedNode->setPreviousColor(insertedNode);
+
+            int index = static_cast<int>(insertedNode->getPiece()->getColor());
+            m_colorInfo[index].setFirstElement(insertedNode);
+
+            m_colorInfo[index].incrementNumberOfElements();
+
+            // // (3) form
+            insertedNode->setNextForm(insertedNode);
+            insertedNode->setPreviousForm(insertedNode);
+
+            index = static_cast<int>(insertedNode->getPiece()->getForm());
+            m_formInfo[index].setFirstElement(insertedNode);
+
+            m_formInfo[index].incrementNumberOfElements();
+        }
+        else
+        {
+            // (1) nodes list
+            insertedNode->setNextNode(m_tail->getNextNode());
+            m_tail->setNextNode(insertedNode);
+            m_tail = insertedNode;
+
+            // (2) color
+            int index = static_cast<int>(insertedNode->getPiece()->getColor());
+
+            if (m_colorInfo[index].getNumberOfElements() == 0)
+            {
+                m_colorInfo[index].setFirstElement(insertedNode);
+
+                insertedNode->setNextColor(insertedNode);
+                insertedNode->setPreviousColor(insertedNode);
+            }
+            else
+            {
+                insertedNode->setNextColor(m_colorInfo[index].getFirstElement()->getNextColor());
+                m_colorInfo[index].getFirstElement()->getNextColor()->setPreviousColor(insertedNode);
+                m_colorInfo[index].getFirstElement()->setNextColor(insertedNode);
+                insertedNode->setPreviousColor(m_colorInfo[index].getFirstElement());
+
+                m_colorInfo[index].setFirstElement(insertedNode);
+            }
+
+            m_colorInfo[index].incrementNumberOfElements();
+
+            // (3) form
+            index = static_cast<int>(insertedNode->getPiece()->getForm());
+
+            if (m_formInfo[index].getNumberOfElements() == 0)
+            {
+                m_formInfo[index].setFirstElement(insertedNode);
+
+                insertedNode->setNextForm(insertedNode);
+                insertedNode->setPreviousForm(insertedNode);
+            }
+            else
+            {
+                insertedNode->setNextForm(m_formInfo[index].getFirstElement()->getNextForm());
+                m_formInfo[index].getFirstElement()->getNextForm()->setPreviousForm(insertedNode);
+                m_formInfo[index].getFirstElement()->setNextForm(insertedNode);
+                insertedNode->setPreviousForm(m_formInfo[index].getFirstElement());
+
+                m_formInfo[index].setFirstElement(insertedNode);
+            }
+
+            m_formInfo[index].incrementNumberOfElements();
+        }
+
+        m_size++;
+        m_nextPieceToInsert = generateNextPiece();
+    }
 }
 
 bool Plateau::canPerformShift()

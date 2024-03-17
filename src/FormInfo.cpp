@@ -1,10 +1,12 @@
 #include "../include/FormInfo.hpp"
 
-FormInfo::FormInfo()
+FormInfo::FormInfo() 
+: m_numberOfElements(0), m_firstElement(nullptr)
 {
 }
 
 FormInfo::FormInfo(Form form, int numberOfElements, Node *firstElement)
+    : m_form(form), m_numberOfElements(numberOfElements), m_firstElement(firstElement)
 {
 }
 
@@ -42,7 +44,6 @@ void FormInfo::setFirstElement(Node *firstElement)
     m_firstElement = firstElement;
 }
 
-
 void FormInfo::incrementNumberOfElements()
 {
     m_numberOfElements++;
@@ -55,4 +56,3 @@ void FormInfo::decrementNumberOfElements()
         m_numberOfElements--;
     }
 }
-
