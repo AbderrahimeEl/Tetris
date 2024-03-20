@@ -53,7 +53,14 @@ int main()
 		else if (choice == 'k')
 		{
 			plateau.insertRight();
-			plateau.checkSideUplet(Side::RIGHT) ? std::cout << "R.U" : std::cout << "!R.U";
+			bool isRightSideUplet = plateau.checkSideUplet(Side::RIGHT);
+			
+			if (isRightSideUplet)
+			{
+				plateau.deleteSideUplet(Side::RIGHT);
+			}
+			
+			isRightSideUplet ? std::cout << "R.U" : std::cout << "!R.U";
 		}
 	}
 }

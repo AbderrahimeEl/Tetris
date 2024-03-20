@@ -45,11 +45,15 @@ public:
 	void shiftByForm(Form);
 	bool checkForUplet();
 	void deleteUplet();
+	void deleteSideUplet(Side side);
 	void increaseScoreBy(int value);
 	bool checkSideUplet(Side side);
 
 private:
 	Piece* generateNextPiece();
+	void updateDeletedForms(Node* temp, Node* current);
+	void updateDeletedColors(Node* temp, Node* current);
+
 };
 
 #endif
