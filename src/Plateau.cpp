@@ -284,7 +284,7 @@ bool Plateau::checkSideUplet(Side side)
 		{
 			Node* temp = m_tail;
 
-			for (size_t i = 0; i < m_upletSize - 1; i++)
+			for (int i = 0; i < m_upletSize - 1; i++)
 			{
 				if (temp->getPreviousColor()->getNextNode() == temp)
 				{
@@ -308,7 +308,7 @@ bool Plateau::checkSideUplet(Side side)
 		{
 			Node* temp = m_tail;
 
-			for (size_t i = 0; i < m_upletSize - 1; i++)
+			for (int i = 0; i < m_upletSize - 1; i++)
 			{
 				if (temp->getPreviousForm()->getNextNode() == temp)
 				{
@@ -338,7 +338,7 @@ bool Plateau::checkSideUplet(Side side)
 
 			Node* temp = m_tail->getNextNode();
 
-			for (size_t i = 0; i < m_upletSize - 1; i++)
+			for (int i = 0; i < m_upletSize - 1; i++)
 			{
 				if (temp->getNextColor() == temp->getNextNode())
 				{
@@ -361,7 +361,7 @@ bool Plateau::checkSideUplet(Side side)
 
 			Node* temp = m_tail->getNextNode();
 
-			for (size_t i = 0; i < m_upletSize - 1; i++)
+			for (int i = 0; i < m_upletSize - 1; i++)
 			{
 				if (temp->getNextForm() == temp->getNextNode())
 				{
