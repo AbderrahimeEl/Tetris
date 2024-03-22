@@ -12,7 +12,7 @@ class Plateau
 {
 private:
 	const int MAX_SIZE;
-	const int m_upletSize = 3;
+	const int m_upletSize = 2;
 	int m_score;
 	int m_size;
 	Node* m_tail = nullptr;
@@ -38,8 +38,9 @@ public:
 	void setNextPieceToInsert(Piece*);
 	void setScore(int);
 	void setSize(int);
-	void insertRight();
-	void insertLeft();
+	/*void insertRight();
+	void insertLeft(Side side);*/
+	void insertNodeToSide(Side side);
 	bool canPerformShift();
 	void shiftByColor(Color);
 	void shiftByForm(Form);
@@ -51,9 +52,10 @@ public:
 
 private:
 	Piece* generateNextPiece();
-	void updateDeletedForms(Node* temp, Node* current);
-	void updateDeletedColors(Node* temp, Node* current);
-
+	void updateDeletedForms(Node* temp, Node* current, Node* rightMostDeleteNode = nullptr);
+	void updateDeletedColors(Node* temp, Node* current, Node* rightMostDeleteNode = nullptr);
+	bool isColorUplet(Side side);
+	void clearNodesList();
 };
 
 #endif
