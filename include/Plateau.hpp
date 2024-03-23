@@ -38,8 +38,6 @@ public:
 	void setNextPieceToInsert(Piece*);
 	void setScore(int);
 	void setSize(int);
-	/*void insertRight();
-	void insertLeft(Side side);*/
 	void insertNodeToSide(Side side);
 	bool canPerformShift();
 	void shiftByColor(Color);
@@ -56,6 +54,11 @@ private:
 	void updateDeletedColors(Node* temp, Node* current, Node* rightMostDeleteNode = nullptr);
 	bool isColorUplet(Side side);
 	void clearNodesList();
+	void setDeletedNodesBounds(Node** leftBound, Node** rightBound, Side side);
+	void updateColorUpletForms(Node*& leftMostDeleteNode, Node*& rightMostDeleteNode);
+	void updateFormUpletColors(Node*& leftMostDeleteNode, Node*& rightMostDeleteNode);
+	void updateColorUpletColors(Side side, Node*& leftMostDeleteNode, Node*& rightMostDeleteNode);
+	void updateFormUpletForms(Side side, Node*& leftMostDeleteNode, Node*& rightMostDeleteNode);
 };
 
 #endif
