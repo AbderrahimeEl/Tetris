@@ -1,15 +1,24 @@
 ﻿#include <iostream>
 #include <stdlib.h>
-#include <termios.h>
-#define STDIN_FILENO 0
 
+#ifdef __linux__ 
+	#include <termios.h>
+	#define STDIN_FILENO 0
+#elif defined(_WIN32) || defined(_WIN64)
+	#include <windows.h>
+	#include <conio.h>
+#endif
 
 #include "../include/Plateau.hpp"
 
-
 // Keyboard key numbers
-#define LEFT_ARROW_KEY 68
-#define RIGHT_ARROW_KEY 67
+#ifdef __linux__ 
+	#define LEFT_ARROW_KEY 68
+	#define RIGHT_ARROW_KEY 67
+#elif defined(_WIN32) || defined(_WIN64)
+	#define LEFT_ARROW_KEY 75
+	#define RIGHT_ARROW_KEY 77
+#endif
 
 // Colors
 #define ANSI_COLOR_RESET   "\x1b[0m"
@@ -25,13 +34,18 @@ void printPiece(Piece piece);
 int waitForKeyHit();
 std::string formsPointerChecker(Plateau& plateau, Form form);
 std::string colorsPointerChecker(Plateau& plateau, Color color);
-void setupLinuxTerminalSettings(termios& t);
-void restoreLinuxTerminalSettings(termios& t);
+
+#ifdef __linux__ 
+	void setupLinuxTerminalSettings(termios& t);
+	void restoreLinuxTerminalSettings(termios& t);
+#endif
 
 int main()
 {
-	struct termios t;
-	setupLinuxTerminalSettings(t);
+	#ifdef __linux__ 
+		struct termios t;
+		setupLinuxTerminalSettings(t);
+	#endif
 
 	Plateau plateau(15);
 	bool displayDiagnosticInfo = false;
@@ -87,8 +101,9 @@ int main()
 			break;
 		}
 	}
-
-		restoreLinuxTerminalSettings(t);
+		#ifdef __linux__ 
+			restoreLinuxTerminalSettings(t);
+		#endif
 }
 
 void printPlateau(Plateau& plateau, bool printDetails) {
@@ -175,18 +190,6 @@ void printPiece(Piece piece)
 	std::cout << color << form << ANSI_COLOR_RESET << " ";
 }
 
-int waitForKeyHit() {
-	char c,d,e;
-
-	do {
-		std::cin >> c;
-		std::cin >> d;
-		std::cin >> e;
-	} while (c != 27 || d != 91);
-
-	return e;
-}
-
 std::string formsPointerChecker(Plateau& plateau, Form form)
 {
 	std::string pointerStatus;
@@ -229,24 +232,56 @@ std::string colorsPointerChecker(Plateau& plateau, Color color)
 	return pointerStatus;
 }
 
-void setupLinuxTerminalSettings(termios& t){
-	// Black magic to prevent Linux from buffering keystrokes.
-    if (tcgetattr(STDIN_FILENO, &t) == -1) {
-        perror("tcgetattr");
-        exit(EXIT_FAILURE);
-    }
+#ifdef __linux__ 
+	int waitForKeyHit() {
+		char c,d,e;
 
-    t.c_lflag &= ~(ICANON | ECHO);  // Disable canonical mode and echoing
-    t.c_cc[VMIN] = 1;                // Set minimum number of characters for non-canonical read
-    t.c_cc[VTIME] = 0;               // Set timeout for non-canonical read
+		do {
+			std::cin >> c;
+			std::cin >> d;
+			std::cin >> e;
+		} while (c != 27 || d != 91);
 
-    if (tcsetattr(STDIN_FILENO, TCSANOW, &t) == -1) {
-        perror("tcsetattr");
-        exit(EXIT_FAILURE);
-    }
-}
+		return e;
+	}
 
-void restoreLinuxTerminalSettings(termios& t){
-    t.c_lflag |= (ICANON | ECHO);
-    tcsetattr(STDIN_FILENO, TCSANOW, &t);
-}
+#elif defined(_WIN32) || defined(_WIN64) 
+
+	int waitForKeyHit() {
+		int pressed;
+		while (!_kbhit());
+		pressed = _getch();
+
+		if (pressed == 224)
+		{
+			pressed = _getch();
+		}
+
+		return pressed;
+	}
+#endif 
+
+#ifdef __linux__ 
+	void setupLinuxTerminalSettings(termios& t){
+		// Black magic to prevent Linux from buffering keystrokes.
+		if (tcgetattr(STDIN_FILENO, &t) == -1) {
+			perror("tcgetattr");
+			exit(EXIT_FAILURE);
+		}
+
+		t.c_lflag &= ~(ICANON | ECHO);  // Disable canonical mode and echoing
+		t.c_cc[VMIN] = 1;                // Set minimum number of characters for non-canonical read
+		t.c_cc[VTIME] = 0;               // Set timeout for non-canonical read
+
+		if (tcsetattr(STDIN_FILENO, TCSANOW, &t) == -1) {
+			perror("tcsetattr");
+			exit(EXIT_FAILURE);
+		}
+	}
+
+	void restoreLinuxTerminalSettings(termios& t){
+		t.c_lflag |= (ICANON | ECHO);
+		tcsetattr(STDIN_FILENO, TCSANOW, &t);
+	}
+
+#endif
