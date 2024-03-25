@@ -5,18 +5,14 @@ FormInfo::FormInfo()
 {
 }
 
-FormInfo::FormInfo(Form form, int numberOfElements, Node *firstElement)
-    : m_form(form), m_numberOfElements(numberOfElements), m_firstElement(firstElement)
+FormInfo::FormInfo(int numberOfElements, Node *firstElement)
+    : m_numberOfElements(numberOfElements), m_firstElement(firstElement)
 {
 }
 
 FormInfo::~FormInfo()
 {
-}
-
-Form FormInfo::getForm() const
-{
-    return m_form;
+    delete m_firstElement;
 }
 
 int FormInfo::getNumberOfElements() const
@@ -27,11 +23,6 @@ int FormInfo::getNumberOfElements() const
 Node *FormInfo::getFirstElement() const
 {
     return m_firstElement;
-}
-
-void FormInfo::setForm(Form form)
-{
-    m_form = form;
 }
 
 void FormInfo::setNumberOfElements(int numberOfElements)

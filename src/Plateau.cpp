@@ -15,6 +15,7 @@ Plateau::Plateau(int max_size, int score, int size, Node* tail, Piece* nextPiece
 Plateau::~Plateau()
 {
 	delete m_tail;
+	delete m_nextPieceToInsert;
 	delete[] m_colorInfo;
 	delete[] m_formInfo;
 }

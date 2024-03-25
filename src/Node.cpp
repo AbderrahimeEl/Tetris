@@ -10,6 +10,7 @@ Node::Node(Node *nextNode, Node *nextColor, Node *previousColor, Node *nextForm,
 
 Node::~Node()
 {
+    delete m_piece;
 }
 
 Piece *Node::getPiece() const

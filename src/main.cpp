@@ -101,9 +101,12 @@ int main()
 			break;
 		}
 	}
-		#ifdef __linux__ 
-			restoreLinuxTerminalSettings(t);
-		#endif
+	
+	#ifdef __linux__ 
+		restoreLinuxTerminalSettings(t);
+	#endif
+
+		
 }
 
 void printPlateau(Plateau& plateau, bool printDetails) {

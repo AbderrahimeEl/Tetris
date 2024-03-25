@@ -5,18 +5,14 @@ ColorInfo::ColorInfo()
 {
 }
 
-ColorInfo::ColorInfo(Color color, int numberOfElements, Node *firstElement) 
-    : m_color(color), m_numberOfElements(numberOfElements), m_firstElement(firstElement)
+ColorInfo::ColorInfo(int numberOfElements, Node *firstElement) 
+    : m_numberOfElements(numberOfElements), m_firstElement(firstElement)
 {
 }
 
 ColorInfo::~ColorInfo()
 {
-}
-
-Color ColorInfo::getColor() const
-{
-    return m_color;
+    delete m_firstElement;
 }
 
 Node *ColorInfo::getFirstElement() const
@@ -27,11 +23,6 @@ Node *ColorInfo::getFirstElement() const
 int ColorInfo::getNumberOfElements() const
 {
     return m_numberOfElements;
-}
-
-void ColorInfo::setColor(Color color)
-{
-    m_color = color;
 }
 
 void ColorInfo::setNumberOfElements(int numberOfElements)
