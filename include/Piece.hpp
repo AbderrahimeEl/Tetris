@@ -14,7 +14,7 @@ enum Form
     SQUARE,
     CIRCLE,
     TRIANGLE,
-    DIAMOND
+    RHOMBUS
 };
 
 class Piece

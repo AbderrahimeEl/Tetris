@@ -1,41 +1,49 @@
-#include "FormInfo.hpp"
+#include "../include/FormInfo.hpp"
 
-FormInfo::FormInfo()
+FormInfo::FormInfo() 
+: m_numberOfElements(0), m_firstElement(nullptr)
 {
 }
 
-FormInfo::FormInfo(Form form, int numberOfElements, Node *firstElement)
+FormInfo::FormInfo(int numberOfElements, Node *firstElement)
+    : m_numberOfElements(numberOfElements), m_firstElement(firstElement)
 {
 }
 
 FormInfo::~FormInfo()
 {
-}
-
-Form FormInfo::getForm() const
-{
-    return Form();
+    delete m_firstElement;
 }
 
 int FormInfo::getNumberOfElements() const
 {
-    return 0;
+    return m_numberOfElements;
 }
 
 Node *FormInfo::getFirstElement() const
 {
-    return nullptr;
+    return m_firstElement;
 }
 
-void FormInfo::setForm(Form)
+void FormInfo::setNumberOfElements(int numberOfElements)
 {
+    m_numberOfElements = numberOfElements;
 }
 
-void FormInfo::setNumberOfElements(int)
+void FormInfo::setFirstElement(Node *firstElement)
 {
+    m_firstElement = firstElement;
 }
 
-void FormInfo::setFirstElement(Node *)
+void FormInfo::incrementNumberOfElements()
 {
+    m_numberOfElements++;
 }
 
+void FormInfo::decrementNumberOfElements()
+{
+    if (m_numberOfElements > 0)
+    {
+        m_numberOfElements--;
+    }
+}

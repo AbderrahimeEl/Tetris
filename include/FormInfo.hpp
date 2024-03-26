@@ -1,26 +1,25 @@
+#ifndef FORM_INFO_HPP
+#define FORM_INFO_HPP
+
 #include "Piece.hpp"
 #include "Node.hpp"
-
-#ifndef FORM_INFO.HPP
-#define FORM_INFO .HPP
 
 class FormInfo
 {
 private:
-    Form form;
-    int numberOfElements;
-    Node *firstElement;
+    int m_numberOfElements;
+    Node *m_firstElement;
 
 public:
     FormInfo();
-    FormInfo(Form form, int numberOfElements, Node *firstElement);
+    FormInfo(int numberOfElements, Node *firstElement);
     ~FormInfo();
-    Form getForm() const;
     int getNumberOfElements() const;
     Node *getFirstElement() const;
-    void setForm(Form);
-    void setNumberOfElements(int);
-    void setFirstElement(Node *);
+    void setNumberOfElements(int numberOfElements);
+    void setFirstElement(Node * firstElement);
+    void incrementNumberOfElements();
+    void decrementNumberOfElements();
 };
 
 #endif
