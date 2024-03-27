@@ -2,23 +2,28 @@
 #include <stdlib.h>
 
 #ifdef __linux__ 
-	#include <termios.h>
-	#define STDIN_FILENO 0
+#include <termios.h>
+#define STDIN_FILENO 0
 #elif defined(_WIN32) || defined(_WIN64)
-	#include <windows.h>
-	#include <conio.h>
+#include <windows.h>
+#include <conio.h>
 #endif
 
 #include "../include/Plateau.hpp"
 
 // Keyboard key numbers
 #ifdef __linux__ 
-	#define LEFT_ARROW_KEY 68
-	#define RIGHT_ARROW_KEY 67
+#define LEFT_ARROW_KEY 68
+#define RIGHT_ARROW_KEY 67
 #elif defined(_WIN32) || defined(_WIN64)
-	#define LEFT_ARROW_KEY 75
-	#define RIGHT_ARROW_KEY 77
+#define LEFT_ARROW_KEY 75
+#define RIGHT_ARROW_KEY 77
 #endif
+
+#define LOWER_B_KEY 98
+#define LOWER_G_KEY 103
+#define LOWER_R_KEY 114
+#define LOWER_Y_KEY 121
 
 // Colors
 #define ANSI_COLOR_RESET   "\x1b[0m"
@@ -36,16 +41,16 @@ std::string formsPointerChecker(Plateau& plateau, Form form);
 std::string colorsPointerChecker(Plateau& plateau, Color color);
 
 #ifdef __linux__ 
-	void setupLinuxTerminalSettings(termios& t);
-	void restoreLinuxTerminalSettings(termios& t);
+void setupLinuxTerminalSettings(termios& t);
+void restoreLinuxTerminalSettings(termios& t);
 #endif
 
 int main()
 {
-	#ifdef __linux__ 
-		struct termios t;
-		setupLinuxTerminalSettings(t);
-	#endif
+#ifdef __linux__ 
+	struct termios t;
+	setupLinuxTerminalSettings(t);
+#endif
 
 	Plateau plateau(15);
 	bool displayDiagnosticInfo = false;
@@ -96,17 +101,40 @@ int main()
 			}
 
 			break;
+		case LOWER_B_KEY:
+			if (plateau.canPerformShift(Color::BLUE))
+			{
+				plateau.shiftByColor(Color::BLUE);
+			}
+			break;
+		case LOWER_G_KEY:
+			if (plateau.canPerformShift(Color::GREEN))
+			{
+				plateau.shiftByColor(Color::GREEN);
+			}
+			break;
+		case LOWER_R_KEY:
+			if (plateau.canPerformShift(Color::RED))
+			{
+				plateau.shiftByColor(Color::RED);
+			}
+			break;
+		case LOWER_Y_KEY:
+			if (plateau.canPerformShift(Color::YELLOW))
+			{
+				plateau.shiftByColor(Color::YELLOW);
+			}
+			break;
 
 		default:
 			break;
 		}
 	}
-	
-	#ifdef __linux__ 
-		restoreLinuxTerminalSettings(t);
-	#endif
 
-		
+#ifdef __linux__ 
+	restoreLinuxTerminalSettings(t);
+#endif
+
 }
 
 void printPlateau(Plateau& plateau, bool printDetails) {
@@ -236,55 +264,55 @@ std::string colorsPointerChecker(Plateau& plateau, Color color)
 }
 
 #ifdef __linux__ 
-	int waitForKeyHit() {
-		char c,d,e;
+int waitForKeyHit() {
+	char c, d, e;
 
-		do {
-			std::cin >> c;
-			std::cin >> d;
-			std::cin >> e;
-		} while (c != 27 || d != 91);
+	do {
+		std::cin >> c;
+		std::cin >> d;
+		std::cin >> e;
+	} while (c != 27 || d != 91);
 
-		return e;
-	}
+	return e;
+}
 
 #elif defined(_WIN32) || defined(_WIN64) 
 
-	int waitForKeyHit() {
-		int pressed;
-		while (!_kbhit());
+int waitForKeyHit() {
+	int pressed;
+	while (!_kbhit());
+	pressed = _getch();
+
+	if (pressed == 224)
+	{
 		pressed = _getch();
-
-		if (pressed == 224)
-		{
-			pressed = _getch();
-		}
-
-		return pressed;
 	}
+
+	return pressed;
+}
 #endif 
 
 #ifdef __linux__ 
-	void setupLinuxTerminalSettings(termios& t){
-		// Black magic to prevent Linux from buffering keystrokes.
-		if (tcgetattr(STDIN_FILENO, &t) == -1) {
-			perror("tcgetattr");
-			exit(EXIT_FAILURE);
-		}
-
-		t.c_lflag &= ~(ICANON | ECHO);  // Disable canonical mode and echoing
-		t.c_cc[VMIN] = 1;                // Set minimum number of characters for non-canonical read
-		t.c_cc[VTIME] = 0;               // Set timeout for non-canonical read
-
-		if (tcsetattr(STDIN_FILENO, TCSANOW, &t) == -1) {
-			perror("tcsetattr");
-			exit(EXIT_FAILURE);
-		}
+void setupLinuxTerminalSettings(termios& t) {
+	// Black magic to prevent Linux from buffering keystrokes.
+	if (tcgetattr(STDIN_FILENO, &t) == -1) {
+		perror("tcgetattr");
+		exit(EXIT_FAILURE);
 	}
 
-	void restoreLinuxTerminalSettings(termios& t){
-		t.c_lflag |= (ICANON | ECHO);
-		tcsetattr(STDIN_FILENO, TCSANOW, &t);
+	t.c_lflag &= ~(ICANON | ECHO);  // Disable canonical mode and echoing
+	t.c_cc[VMIN] = 1;                // Set minimum number of characters for non-canonical read
+	t.c_cc[VTIME] = 0;               // Set timeout for non-canonical read
+
+	if (tcsetattr(STDIN_FILENO, TCSANOW, &t) == -1) {
+		perror("tcsetattr");
+		exit(EXIT_FAILURE);
 	}
+}
+
+void restoreLinuxTerminalSettings(termios& t) {
+	t.c_lflag |= (ICANON | ECHO);
+	tcsetattr(STDIN_FILENO, TCSANOW, &t);
+}
 
 #endif

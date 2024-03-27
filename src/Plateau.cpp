@@ -701,13 +701,153 @@ void Plateau::updateDeletedColors(Node* current, Node* leftMostDeleteNode, Node*
 }
 
 // Shift
-bool Plateau::canPerformShift()
+bool Plateau::canPerformShift(Color color)
 {
-	return false;
+	return m_colorInfo[color].getNumberOfElements() >= m_minPiecesForShift;
 }
 
-void Plateau::shiftByColor(Color)
+void Plateau::shiftByColor(Color color)
 {
+	// declarer un pointeur currentColor qui pointe sur le premier element de la couleur a decaler
+	Node* currentColor = m_colorInfo[color].getFirstElement();
+	Node* newPlacement = m_colorInfo[color].getFirstElement()->getPreviousColor();
+
+	// preparer trois noeuds temporaire pour le decalage read_temp, write_temp et temp pour faire la permutation 
+	Node read_temp, write_temp, temp;
+
+	read_temp.setPiece(currentColor->getPiece());
+	read_temp.setNextForm(currentColor->getNextForm());
+	read_temp.setPreviousForm(currentColor->getPreviousForm());
+
+	// tant que current n'est pas le dernier element de la couleur a decaler
+	do {
+		// 1. copier les informations(form, nextForm, previousForm) du noeud qui preceed le noeud current dans temp1
+		write_temp.setPiece(newPlacement->getPiece());
+		write_temp.setNextForm(newPlacement->getNextForm());
+		write_temp.setPreviousForm(newPlacement->getPreviousForm());
+
+		// 2. copier la form du current dans currentColor->getPreviosColor().setForm(current->getForm())
+		newPlacement->setPiece(read_temp.getPiece());
+
+		// 3. mise a jour de la liste des formes
+		Form form = read_temp.getPiece()->getForm();
+		if (m_formInfo[form].getNumberOfElements() == 1)
+		{
+			// cas 1 - il existe une seule piece de cette forme sur le plateau
+			// nextForm et previousForm de la forme pointe sur elle meme
+			// aucun mise a jour a faire au niveau du pointeur de la forme
+			newPlacement->setNextForm(newPlacement);
+			newPlacement->setPreviousForm(newPlacement);
+
+			m_formInfo[form].setFirstElement(newPlacement);
+		}
+		else if (m_formInfo[form].getNumberOfElements() == 2) {
+			// cas 2 - il existe deux pieces de cette forme sur le plateau
+			newPlacement->setNextForm(read_temp.getNextForm());
+			newPlacement->setPreviousForm(read_temp.getPreviousForm());
+
+			// actualiser nextForm et previousForm de l'autre forme pointe sur la nouvelle adresse de la forme
+			currentColor->getPreviousForm()->setNextForm(newPlacement);
+			currentColor->getPreviousForm()->setPreviousForm(newPlacement);
+
+			// update the first element of the formInfo list
+			Node* ptr = currentColor;
+
+			if (newPlacement == m_tail)
+			{
+				m_formInfo[form].setFirstElement(newPlacement);
+			}
+			else if (newPlacement == m_tail->getNextNode())
+			{
+				m_formInfo[form].setFirstElement(newPlacement->getPreviousForm());
+			}
+			else
+			{
+				bool isHead = true;
+
+				do {
+					ptr = ptr->getNextNode();
+					if (ptr->getPiece()->getForm() == newPlacement->getPiece()->getForm() && ptr != currentColor)
+					{
+						isHead = false;
+						break;
+					}
+				} while (ptr != m_tail);
+
+				if (isHead)
+				{
+					m_formInfo[form].setFirstElement(newPlacement);
+				}
+				else
+				{
+					m_formInfo[form].setFirstElement(newPlacement->getPreviousColor());
+				}
+			}
+		}
+		else if (m_formInfo[form].getNumberOfElements() > 2) {
+			// cas 3 - il existe plus de deux pieces de cette forme sur le plateau
+			Node* formFinderPtr = currentColor;
+			do {
+				formFinderPtr == currentColor->getNextNode();
+
+				if (formFinderPtr->getPiece()->getForm() == currentColor->getPiece()->getForm()) {
+					if (formFinderPtr->getPreviousForm() == currentColor) {
+						//	cas 3.1 - si l'order des pieces n'est pas ete modifie
+						newPlacement->setNextForm(read_temp.getNextForm());
+						newPlacement->setPreviousForm(read_temp.getPreviousForm());
+
+						//	actualiser nextForm et previousForm pour pointer sur la nouvelle adresse de la cette forme
+						currentColor->getPreviousForm()->setNextForm(newPlacement);
+						currentColor->getNextForm()->setPreviousForm(newPlacement);
+					}
+					else {
+						//	cas 3.2 - si l'order des pieces est modifie
+						//	liee les enciens nextForm et previousForm de la forme a decaler entre eux
+						currentColor->getPreviousForm()->setNextForm(currentColor->getNextForm());
+						currentColor->getNextForm()->setPreviousForm(currentColor->getPreviousForm());
+
+						//	done a la forme a decaler la forme precedente de formFinderPtr
+						formFinderPtr->getPreviousForm()->setNextForm(currentColor->getPreviousColor());
+
+						//	done a la forme a decaler la forme suivante formFinderPtr
+						newPlacement->setPreviousForm(formFinderPtr->getPreviousForm());
+
+						//	done a la forme precedente de formFinderPtr la forme a decaler
+						formFinderPtr->setPreviousForm(currentColor->getPreviousColor());
+
+						//	done a la forme precedente de formFinderPtr la forme a decaler
+						newPlacement->setNextForm(formFinderPtr);
+					}
+					break;
+				}
+			} while (formFinderPtr != currentColor);
+
+			// update the first element of the formInfo list
+			Node* formHeadFinderPtr = m_formInfo[form].getFirstElement();
+			Node* lastSeenFormPtr = formHeadFinderPtr;
+
+			do {
+				formHeadFinderPtr = formHeadFinderPtr->getNextNode();
+				if (formHeadFinderPtr->getPiece()->getForm() == currentColor->getPiece()->getForm() && formHeadFinderPtr != currentColor)
+				{
+					lastSeenFormPtr = formHeadFinderPtr;
+				}
+			} while (formHeadFinderPtr != m_tail);
+
+			m_formInfo[form].setFirstElement(lastSeenFormPtr);
+		}
+
+		temp = read_temp;
+		read_temp = write_temp;
+		write_temp = temp;
+
+		currentColor = currentColor->getPreviousColor();
+		newPlacement = newPlacement->getPreviousColor();
+	} while (currentColor != m_colorInfo[color].getFirstElement());
+
+	read_temp.setPiece(nullptr);
+	write_temp.setPiece(nullptr);
+	temp.setPiece(nullptr);
 }
 
 void Plateau::shiftByForm(Form)

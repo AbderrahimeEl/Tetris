@@ -13,6 +13,7 @@ class Plateau
 private:
 	const int MAX_SIZE;
 	const int m_upletSize = 2;
+	const int m_minPiecesForShift = 2;
 	int m_score;
 	int m_size;
 	Node* m_tail = nullptr;
@@ -39,7 +40,7 @@ public:
 	void setScore(int);
 	void setSize(int);
 	void insertNodeToSide(Side side);
-	bool canPerformShift();
+	bool canPerformShift(Color color);
 	void shiftByColor(Color);
 	void shiftByForm(Form);
 	bool checkForUplet();
