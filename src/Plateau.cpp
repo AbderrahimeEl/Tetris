@@ -583,7 +583,12 @@ void Plateau::updateDeletedForms(Node* current, Node* leftMostDeleteNode, Node* 
 
 		m_formInfo[form].setFirstElement(current->getPreviousForm());
 		m_formInfo[form].setNumberOfElements(m_formInfo[form].getNumberOfElements() - numberOfDeletedPieces);
+	
+	if (m_formInfo[form].getNumberOfElements() == 0)
+	{
+		m_formInfo[form].setFirstElement(nullptr);
 	}
+}
 }
 
 // FormUplet
@@ -697,6 +702,11 @@ void Plateau::updateDeletedColors(Node* current, Node* leftMostDeleteNode, Node*
 
 		m_colorInfo[color].setFirstElement(current->getPreviousColor());
 		m_colorInfo[color].setNumberOfElements(m_colorInfo[color].getNumberOfElements() - numberOfDeletedPieces);
+	
+		if (m_colorInfo[color].getNumberOfElements() == 0)
+		{
+			m_colorInfo[color].setFirstElement(nullptr);
+		}
 	}
 }
 
