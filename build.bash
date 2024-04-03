@@ -1,0 +1,1 @@
+g++ src/*.cpp -Iinclude -o my_program -lraylib -lGL -lm -lpthread -ldl -lrt -lX11

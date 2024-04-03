@@ -1,12 +1,12 @@
 #ifndef PIECE_CPP
 #define PIECE_CPP
 
-enum Color
+enum _Color
 {
-    RED,
-    GREEN,
-    BLUE,
-    YELLOW
+    _RED,
+    _GREEN,
+    _BLUE,
+    _YELLOW
 };
 
 enum Form
@@ -20,16 +20,16 @@ enum Form
 class Piece
 {
 private:
-    Color m_color;
+    _Color m_color;
     Form m_form;
 
 public:
     Piece();
-    Piece(Color color, Form form);
+    Piece(_Color color, Form form);
     ~Piece();
-    Color getColor() const;
+    _Color getColor() const;
     Form getForm() const;
-    void setColor(Color color);
+    void setColor(_Color color);
     void setForm(Form form);
 };
 
