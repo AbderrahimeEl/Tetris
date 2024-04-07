@@ -1,63 +1,79 @@
 ﻿#include <iostream>
-#include <stdlib.h>
 
-#ifdef __linux__ 
-	#include <termios.h>
-	#define STDIN_FILENO 0
+using namespace std;
+
+#ifdef _linux_
+#include <termios.h>
+#define STDIN_FILENO 0
 #elif defined(_WIN32) || defined(_WIN64)
-	#include <windows.h>
-	#include <conio.h>
+#include <windows.h>
+#include <conio.h>
 #endif
 
 #include "../include/Plateau.hpp"
 
 // Keyboard key numbers
-#ifdef __linux__ 
-	#define LEFT_ARROW_KEY 68
-	#define RIGHT_ARROW_KEY 67
+#ifdef _linux_
+#define LEFT_ARROW_KEY 68
+#define RIGHT_ARROW_KEY 67
 #elif defined(_WIN32) || defined(_WIN64)
-	#define LEFT_ARROW_KEY 75
-	#define RIGHT_ARROW_KEY 77
+#define LEFT_ARROW_KEY 75
+#define RIGHT_ARROW_KEY 77
 #endif
 
+#define LOWER_B_KEY 98
+#define LOWER_G_KEY 103
+#define LOWER_R_KEY 114
+#define LOWER_Y_KEY 121
+#define LOWER_C_KEY 99
+#define LOWER_S_KEY 115
+#define LOWER_T_KEY 116
+#define LOWER_D_KEY 100
+
 // Colors
-#define ANSI_COLOR_RESET   "\x1b[0m"
-#define ANSI_COLOR_RED     "\x1b[31m"
-#define ANSI_COLOR_GREEN   "\x1b[32m"
-#define ANSI_COLOR_YELLOW  "\x1b[33m"
-#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_RESET "\x1b[0m"
+#define ANSI_COLOR_RED "\x1b[31m"
+#define ANSI_COLOR_GREEN "\x1b[32m"
+#define ANSI_COLOR_YELLOW "\x1b[33m"
+#define ANSI_COLOR_BLUE "\x1b[34m"
 #define ANSI_COLOR_MAGENTA "\x1b[35m"
 
 // Function declarations
-void printPlateau(Plateau& plateau, bool printDetails);
+void printPlateau(Plateau &plateau, bool printDetails);
+void printColorList(Plateau, Color);
 void printPiece(Piece piece);
 int waitForKeyHit();
-std::string formsPointerChecker(Plateau& plateau, Form form);
-std::string colorsPointerChecker(Plateau& plateau, Color color);
+string formsPointerChecker(Plateau &plateau, Form form);
+string colorsPointerChecker(Plateau &plateau, Color color);
 
-#ifdef __linux__ 
-	void setupLinuxTerminalSettings(termios& t);
-	void restoreLinuxTerminalSettings(termios& t);
+#ifdef _linux_
+void setupLinuxTerminalSettings(termios &t);
+void restoreLinuxTerminalSettings(termios &t);
 #endif
 
 int main()
 {
-	#ifdef __linux__ 
-		struct termios t;
-		setupLinuxTerminalSettings(t);
-	#endif
+#ifdef _linux_
+	struct termios t;
+	setupLinuxTerminalSettings(t);
+#endif
 
 	Plateau plateau(15);
-	bool displayDiagnosticInfo = false;
+	bool displayDiagnosticInfo = true;
 
-	std::cout << "Press left and right arrow keys to insert the next piece" << std::endl << std::endl;
+	cout << "Press left and right arrow keys to insert the next piece" << endl;
+	cout << "Press b, g, r, y to shift by color" << endl;
+	cout << "Press c, s, t, d to shift by form" << endl
+		 << endl;
+
+	Side side;
 
 	while (true)
 	{
 		printPlateau(plateau, displayDiagnosticInfo);
 
 		int key = waitForKeyHit();
-		std::cout << std::endl;
+		cout << endl;
 
 		bool isRightSideUplet = false;
 		bool isLeftSideUplet = false;
@@ -65,75 +81,82 @@ int main()
 		switch (key)
 		{
 		case LEFT_ARROW_KEY:
-			plateau.insertNodeToSide(Side::LEFT);
-			isLeftSideUplet = plateau.checkSideUplet(Side::LEFT);
-
-			if (isLeftSideUplet)
-			{
-				plateau.deleteSideUplet(Side::LEFT);
-			}
-
-			if (displayDiagnosticInfo)
-			{
-				isLeftSideUplet ? std::cout << " L.U | " : std::cout << "!L.U | ";
-			}
-
+			side = Side::LEFT;
+			plateau.insertNode(side);
 			break;
 
 		case RIGHT_ARROW_KEY:
-			plateau.insertNodeToSide(Side::RIGHT);
+			side = Side::RIGHT;
+			plateau.insertNode(side);
+			break;
 
-			isRightSideUplet = plateau.checkSideUplet(Side::RIGHT);
+		case LOWER_B_KEY:
+			plateau.shiftByColor(Color::BLUE);
+			break;
 
-			if (isRightSideUplet)
-			{
-				plateau.deleteSideUplet(Side::RIGHT);
-			}
+		case LOWER_G_KEY:
+			plateau.shiftByColor(Color::GREEN);
+			break;
 
-			if (displayDiagnosticInfo)
-			{
-				isRightSideUplet ? std::cout << " R.U | " : std::cout << "!R.U | ";
-			}
+		case LOWER_R_KEY:
+			plateau.shiftByColor(Color::RED);
+			break;
 
+		case LOWER_Y_KEY:
+			plateau.shiftByColor(Color::YELLOW);
+			break;
+
+		case LOWER_C_KEY:
+			plateau.shiftByForm(Form::CIRCLE);
+			break;
+
+		case LOWER_S_KEY:
+			plateau.shiftByForm(Form::SQUARE);
+			break;
+
+		case LOWER_T_KEY:
+			plateau.shiftByForm(Form::TRIANGLE);
+			break;
+
+		case LOWER_D_KEY:
+			plateau.shiftByForm(Form::DIAMOND);
 			break;
 
 		default:
 			break;
 		}
 	}
-	
-	#ifdef __linux__ 
-		restoreLinuxTerminalSettings(t);
-	#endif
 
-		
+#ifdef _linux_
+	restoreLinuxTerminalSettings(t);
+#endif
 }
 
-void printPlateau(Plateau& plateau, bool printDetails) {
+void printPlateau(Plateau &plateau, bool printDetails)
+{
 	if (printDetails)
 	{
-		std::cout << "(C: " << plateau.getForms()[static_cast<int>(Form::CIRCLE)].getNumberOfElements() << "; " << formsPointerChecker(plateau, Form::CIRCLE) << ")|";
-		std::cout << "(S: " << plateau.getForms()[static_cast<int>(Form::SQUARE)].getNumberOfElements() << "; " << formsPointerChecker(plateau, Form::SQUARE) << ")|";
-		std::cout << "(T: " << plateau.getForms()[static_cast<int>(Form::TRIANGLE)].getNumberOfElements() << "; " << formsPointerChecker(plateau, Form::TRIANGLE) << ")|";
-		std::cout << "(R: " << plateau.getForms()[static_cast<int>(Form::RHOMBUS)].getNumberOfElements() << "; " << formsPointerChecker(plateau, Form::RHOMBUS) << ") || ";
+		cout << "(C: " << plateau.getForms()[Form::CIRCLE].getNumberOfElements() << "; " << formsPointerChecker(plateau, Form::CIRCLE) << ")|";
+		cout << "(S: " << plateau.getForms()[Form::SQUARE].getNumberOfElements() << "; " << formsPointerChecker(plateau, Form::SQUARE) << ")|";
+		cout << "(T: " << plateau.getForms()[Form::TRIANGLE].getNumberOfElements() << "; " << formsPointerChecker(plateau, Form::TRIANGLE) << ")|";
+		cout << "(D: " << plateau.getForms()[Form::DIAMOND].getNumberOfElements() << "; " << formsPointerChecker(plateau, Form::DIAMOND) << ") || ";
 
-		std::cout << "(" << ANSI_COLOR_BLUE << "b" << ANSI_COLOR_RESET << ": " << plateau.getColors()[static_cast<int>(Color::BLUE)].getNumberOfElements() << "; " << colorsPointerChecker(plateau, Color::BLUE) << ")|";
-		std::cout << "(" << ANSI_COLOR_RED << "r" << ANSI_COLOR_RESET << ": " << plateau.getColors()[static_cast<int>(Color::RED)].getNumberOfElements() << "; " << colorsPointerChecker(plateau, Color::RED) << ")|";
-		std::cout << "(" << ANSI_COLOR_GREEN << "g" << ANSI_COLOR_RESET << ": " << plateau.getColors()[static_cast<int>(Color::GREEN)].getNumberOfElements() << "; " << colorsPointerChecker(plateau, Color::GREEN) << ")|";
-		std::cout << "(" << ANSI_COLOR_YELLOW << "y" << ANSI_COLOR_RESET << ": " << plateau.getColors()[static_cast<int>(Color::YELLOW)].getNumberOfElements() << "; " << colorsPointerChecker(plateau, Color::YELLOW) << ") || ";
+		cout << "(" << ANSI_COLOR_BLUE << "b" << ANSI_COLOR_RESET << ": " << plateau.getColors()[Color::BLUE].getNumberOfElements() << "; " << colorsPointerChecker(plateau, Color::BLUE) << ")|";
+		cout << "(" << ANSI_COLOR_RED << "r" << ANSI_COLOR_RESET << ": " << plateau.getColors()[Color::RED].getNumberOfElements() << "; " << colorsPointerChecker(plateau, Color::RED) << ")|";
+		cout << "(" << ANSI_COLOR_GREEN << "g" << ANSI_COLOR_RESET << ": " << plateau.getColors()[Color::GREEN].getNumberOfElements() << "; " << colorsPointerChecker(plateau, Color::GREEN) << ")|";
+		cout << "(" << ANSI_COLOR_YELLOW << "y" << ANSI_COLOR_RESET << ": " << plateau.getColors()[Color::YELLOW].getNumberOfElements() << "; " << colorsPointerChecker(plateau, Color::YELLOW) << ") || ";
 
-		std::cout << "#: " << plateau.getSize() << " | ";
+		cout << "#: " << plateau.getSize() << " | ";
 	}
 
-
-	std::cout << "Next : ";
+	cout << "Next : ";
 	printPiece(*plateau.getNextPieceToInsert());
 
-	std::cout << "|| ";
+	cout << "|| ";
 
 	if (plateau.getNodes())
 	{
-		Node* temp = plateau.getNodes();
+		Node *temp = plateau.getNodes();
 
 		do
 		{
@@ -142,13 +165,12 @@ void printPlateau(Plateau& plateau, bool printDetails) {
 
 		} while (temp != plateau.getNodes());
 	}
-
 }
 
 void printPiece(Piece piece)
 {
-	std::string form;
-	std::string color;
+	string form;
+	string color;
 
 	switch (piece.getForm())
 	{
@@ -161,12 +183,12 @@ void printPiece(Piece piece)
 	case Form::SQUARE:
 		form = "S";
 		break;
-	case Form::RHOMBUS:
-		form = "R";
+	case Form::DIAMOND:
+		form = "D";
 		break;
 
 	default:
-		form = '#';
+		form = "#";
 		break;
 	}
 
@@ -190,23 +212,27 @@ void printPiece(Piece piece)
 		break;
 	}
 
-	std::cout << color << form << ANSI_COLOR_RESET << " ";
+	cout << color << form << ANSI_COLOR_RESET << " ";
 }
 
-std::string formsPointerChecker(Plateau& plateau, Form form)
+string formsPointerChecker(Plateau &plateau, Form form)
 {
-	std::string pointerStatus;
+	string pointerStatus;
 
-	if (plateau.getForms()[form].getFirstElement() == nullptr) {
+	if (plateau.getForms()[form].getFirstElement() == nullptr)
+	{
 		pointerStatus = " N";
 	}
-	else {
-		try {
+	else
+	{
+		try
+		{
 			plateau.getForms()[form].getFirstElement()->getNextForm()->getPiece()->getForm() == form;
 
 			pointerStatus = "!N";
 		}
-		catch (...) {
+		catch (...)
+		{
 			pointerStatus = " N";
 		}
 	}
@@ -214,20 +240,24 @@ std::string formsPointerChecker(Plateau& plateau, Form form)
 	return pointerStatus;
 }
 
-std::string colorsPointerChecker(Plateau& plateau, Color color)
+string colorsPointerChecker(Plateau &plateau, Color color)
 {
-	std::string pointerStatus;
+	string pointerStatus;
 
-	if (plateau.getColors()[color].getFirstElement() == nullptr) {
+	if (plateau.getColors()[color].getFirstElement() == nullptr)
+	{
 		pointerStatus = " N";
 	}
-	else {
-		try {
+	else
+	{
+		try
+		{
 			plateau.getColors()[color].getFirstElement()->getNextColor()->getPiece()->getColor() == color;
 
 			pointerStatus = "!N";
 		}
-		catch (...) {
+		catch (...)
+		{
 			pointerStatus = " N";
 		}
 	}
@@ -235,56 +265,64 @@ std::string colorsPointerChecker(Plateau& plateau, Color color)
 	return pointerStatus;
 }
 
-#ifdef __linux__ 
-	int waitForKeyHit() {
-		char c,d,e;
+#ifdef _linux_
+int waitForKeyHit()
+{
+	char c, d, e;
 
-		do {
-			std::cin >> c;
-			std::cin >> d;
-			std::cin >> e;
-		} while (c != 27 || d != 91);
+	do
+	{
+		cin >> c;
+		cin >> d;
+		cin >> e;
+	} while (c != 27 || d != 91);
 
-		return e;
-	}
+	return e;
+}
 
-#elif defined(_WIN32) || defined(_WIN64) 
+#elif defined(_WIN32) || defined(_WIN64)
 
-	int waitForKeyHit() {
-		int pressed;
-		while (!_kbhit());
+int waitForKeyHit()
+{
+	int pressed;
+	while (!_kbhit())
+		;
+	pressed = _getch();
+
+	if (pressed == 224)
+	{
 		pressed = _getch();
-
-		if (pressed == 224)
-		{
-			pressed = _getch();
-		}
-
-		return pressed;
-	}
-#endif 
-
-#ifdef __linux__ 
-	void setupLinuxTerminalSettings(termios& t){
-		// Black magic to prevent Linux from buffering keystrokes.
-		if (tcgetattr(STDIN_FILENO, &t) == -1) {
-			perror("tcgetattr");
-			exit(EXIT_FAILURE);
-		}
-
-		t.c_lflag &= ~(ICANON | ECHO);  // Disable canonical mode and echoing
-		t.c_cc[VMIN] = 1;                // Set minimum number of characters for non-canonical read
-		t.c_cc[VTIME] = 0;               // Set timeout for non-canonical read
-
-		if (tcsetattr(STDIN_FILENO, TCSANOW, &t) == -1) {
-			perror("tcsetattr");
-			exit(EXIT_FAILURE);
-		}
 	}
 
-	void restoreLinuxTerminalSettings(termios& t){
-		t.c_lflag |= (ICANON | ECHO);
-		tcsetattr(STDIN_FILENO, TCSANOW, &t);
+	return pressed;
+}
+#endif
+
+#ifdef _linux_
+void setupLinuxTerminalSettings(termios &t)
+{
+	// Black magic to prevent Linux from buffering keystrokes.
+	if (tcgetattr(STDIN_FILENO, &t) == -1)
+	{
+		perror("tcgetattr");
+		exit(EXIT_FAILURE);
 	}
+
+	t.c_lflag &= ~(ICANON | ECHO); // Disable canonical mode and echoing
+	t.c_cc[VMIN] = 1;			   // Set minimum number of characters for non-canonical read
+	t.c_cc[VTIME] = 0;			   // Set timeout for non-canonical read
+
+	if (tcsetattr(STDIN_FILENO, TCSANOW, &t) == -1)
+	{
+		perror("tcsetattr");
+		exit(EXIT_FAILURE);
+	}
+}
+
+void restoreLinuxTerminalSettings(termios &t)
+{
+	t.c_lflag |= (ICANON | ECHO);
+	tcsetattr(STDIN_FILENO, TCSANOW, &t);
+}
 
 #endif
