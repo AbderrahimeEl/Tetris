@@ -39,7 +39,7 @@ FormInfo *Plateau::getForms() const
 	return m_formInfo;
 }
 
-int Plateau::getScore() const
+int Plateau::getScore()
 {
 	return m_score;
 }
@@ -49,9 +49,14 @@ Piece *Plateau::getNextPieceToInsert() const
 	return m_nextPieceToInsert;
 }
 
-int Plateau::getSize() const
+int Plateau::getSize()
 {
 	return m_size;
+}
+
+int Plateau::getUpletSize()
+{
+	return m_upletSize;
 }
 
 void Plateau::setNodes(Node *nodes)
@@ -74,9 +79,22 @@ void Plateau::setScore(int score)
 	m_score = score;
 }
 
-void Plateau::increaseScoreBy(int value)
+void Plateau::increaseScore(int level)
 {
-	m_score += value;
+	switch (level)
+	{
+	case 1:
+		m_score += 5;
+		break;
+	case 2:
+		m_score += 10;
+		break;
+	case 3:
+		m_score += 20;
+		break;
+	default:
+		break;
+	}
 }
 
 void Plateau::setNextPieceToInsert(Piece *piece)
@@ -87,6 +105,11 @@ void Plateau::setNextPieceToInsert(Piece *piece)
 void Plateau::setSize(int size)
 {
 	m_size = size;
+}
+
+void Plateau::setUpletSize(int Upletsize)
+{
+	m_upletSize = Upletsize;
 }
 
 Piece *Plateau::generateNextPiece()
@@ -321,10 +344,6 @@ bool Plateau::checkSideUplet(Side side)
 	}
 }
 
-void Plateau::LoadSavedPlateau(std::string str)
-{
-
-} // Deletion
 void Plateau::deleteSideUplet(Side side)
 {
 	if (m_upletSize > m_size)
@@ -869,97 +888,59 @@ void Plateau::deleteUplet()
 {
 }
 
+// save plateau information to file
 void Plateau::savePlateauToFile(const std::string &filename)
 {
-	std::ofstream outfile(filename);
+	if (this->getScore() == 0 && this->getSize() == 0)
+		return;
+	std::ofstream outFile(filename);
 
-	if (!outfile.is_open())
+	if (!outFile.is_open())
 	{
-		std::cerr << "Error: Unable to open file " << filename << " for writing." << std::endl;
+		std::cerr << "Error: Unable to open file for writing." << std::endl;
 		return;
 	}
-
-	// Write plateau information to the file
-	outfile << "Score: " << m_score << std::endl;
-	outfile << "Size: " << m_size << std::endl;
-
-	// Write each node's color and form to the file
-	Node *currentNode = m_tail;
-	if (m_tail != nullptr)
+	outFile << m_upletSize << std::endl;
+	outFile << m_score << " " << m_size << std::endl;
+	if (this->getSize() != 0)
+	{
+		Node *currentNode = m_tail->getNextNode();
 		do
 		{
-			outfile << "Node Color: " << currentNode->getPiece()->getColor() << ", Form: " << currentNode->getPiece()->getForm() << std::endl;
+			Piece *piece = currentNode->getPiece();
+			outFile << piece->getColor() << " " << piece->getForm() << std::endl;
 			currentNode = currentNode->getNextNode();
-		} while (currentNode != m_tail);
-
-	// Write next piece to insert
-	if (m_nextPieceToInsert != nullptr)
-	{
-		outfile << "Next Piece to Insert: " << m_nextPieceToInsert->getColor() << ", " << m_nextPieceToInsert->getForm() << std::endl;
+		} while (currentNode != m_tail->getNextNode());
+		clearNodesList();
 	}
-
-	outfile.close();
+	this->setScore(0);
+	outFile.close();
 }
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-
+// Read plateau information from file
 void Plateau::LoadPlateauFromFile(const std::string &filename)
 {
-	std::ifstream infile(filename);
-
-	if (!infile.is_open())
+	std::ifstream inFile(filename);
+	if (!inFile.is_open())
 	{
-		std::cerr << "Error: Unable to open file " << filename << " for reading." << std::endl;
+		std::cerr << "Error: Unable to open file for reading." << std::endl;
 		return;
 	}
-
-	// Clear the existing plateau
 	clearNodesList();
-	m_score = 0; // Reset score
-	m_nextPieceToInsert = nullptr;
+	int score, size, upletSize;
+	inFile >> upletSize;
+	inFile >> score >> size;
+	setScore(score);
+	setSize(0);
+	setUpletSize(upletSize);
 
-	std::string line;
-	while (std::getline(infile, line))
+	for (int i = 0; i < size; i++)
 	{
-		// Parse each line to extract information
-		std::istringstream iss(line);
-		std::string token;
-		std::getline(iss, token, ':');
-
-		if (token == "Score")
-		{
-			std::getline(iss, token);
-			m_score = std::stoi(token);
-		}
-		else if (token == "Size")
-		{
-			std::getline(iss, token);
-			m_size = std::stoi(token);
-		}
-		else if (token == "Node Color")
-		{
-			std::string color, form;
-			std::getline(iss, color, ',');
-			std::getline(iss, form);
-			_Color nodeColor = static_cast<_Color>(std::stoi(color)); // Assuming _Color is an enum
-			Form nodeForm = static_cast<Form>(std::stoi(form));		  // Assuming Form is an enum
-			Piece piece(nodeColor, nodeForm);
-			this->setNextPieceToInsert(&piece);
-			this->insertNodeToSide(RIGHT);
-			// Define this function to insert a node with color and form
-		}
-		else if (token == "Next Piece to Insert")
-		{
-			std::string color, form;
-			std::getline(iss, color, ',');
-			std::getline(iss, form);
-			_Color nextPieceColor = static_cast<_Color>(std::stoi(color));	// Assuming _Color is an enum
-			Form nextPieceForm = static_cast<Form>(std::stoi(form));		// Assuming Form is an enum
-			m_nextPieceToInsert = new Piece(nextPieceColor, nextPieceForm); // Assuming Piece constructor takes color and form
-		}
+		int color, form;
+		inFile >> color >> form;
+		Piece *piece = new Piece(static_cast<_Color>(color), static_cast<Form>(form));
+		setNextPieceToInsert(piece);
+		insertNodeToSide(Side::RIGHT);
 	}
-
-	infile.close();
+	inFile.close();
 }

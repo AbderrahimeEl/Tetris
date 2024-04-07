@@ -17,7 +17,7 @@ class Plateau
 {
 private:
 	const int MAX_SIZE;
-	const int m_upletSize = 3;
+	int m_upletSize = 3;
 	const int m_minPiecesForShift = 2;
 	int m_score;
 	int m_size;
@@ -35,8 +35,9 @@ public:
 	FormInfo *getForms() const;
 	Piece *getNextPieceToInsert() const;
 	int getMaxSize() const;
-	int getScore() const;
-	int getSize() const;
+	int getScore();
+	int getSize();
+	int getUpletSize();
 
 	void setNodes(Node *);
 	void setColors(ColorInfo *);
@@ -44,6 +45,7 @@ public:
 	void setNextPieceToInsert(Piece *);
 	void setScore(int);
 	void setSize(int);
+	void setUpletSize(int);
 	void insertNodeToSide(Side side);
 	bool canPerformShift(_Color color);
 	void shiftByColor(_Color);
@@ -51,12 +53,11 @@ public:
 	bool checkForUplet();
 	void deleteUplet();
 	void deleteSideUplet(Side side);
-	void increaseScoreBy(int value);
+	void increaseScore(int level);
 	bool checkSideUplet(Side side);
 	void LoadSavedPlateau(std::string);
-	void savePlateauToFile(const std::string& filename) ;
-    void LoadPlateauFromFile(const std::string &filename);
-    void loadPlateauFromFile(const std::string &filename);
+	void savePlateauToFile(const std::string &filename);
+	void LoadPlateauFromFile(const std::string &filename);
 
 private:
 	Piece *generateNextPiece();

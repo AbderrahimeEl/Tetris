@@ -2,29 +2,42 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "../include/GameUI.hpp"
-
 #include "../include/Plateau.hpp"
 
 int main(void)
 {
-
-	std::cout << "ok";
 	const int screenWidth = 1000;
 	const int screenHeight = 500;
 
-	InitWindow(screenWidth, screenHeight, "Add Picture Example");
+	InitWindow(screenWidth, screenHeight, "TETRIS");
 
 	Plateau *plateau = new Plateau(15);
-	plateau->LoadPlateauFromFile("game.txt");
-	MenuOption selectedOption = DrawGameMenu(screenWidth, screenHeight);
-	switch (selectedOption)
+	MenuOption selectedOption;
+	do
 	{
-	case START_GAME:
-	{
-		playGame(plateau);
-		CloseWindow();
-
-		return 0;
-	}
-	}
+		selectedOption = DrawGameMenu(screenWidth, screenHeight);
+		switch (selectedOption)
+		{
+		case START_GAME:
+		{
+			playGame(plateau);
+			plateau->savePlateauToFile("data/game.txt");
+			break;
+		}
+		case LOAD_SAVED_GAME:
+		{
+			plateau->LoadPlateauFromFile("data/game.txt");
+			playGame(plateau);
+			plateau->savePlateauToFile("data/game.txt");
+			break;
+		}
+		case LEVEL:
+		{
+			DifficultyLevel level = DrawDifficultyMenu(screenWidth, screenHeight);
+			plateau->setUpletSize(level + 1);
+			break;
+		}
+		}
+	} while (selectedOption != EXIT);
+	CloseWindow();
 }
