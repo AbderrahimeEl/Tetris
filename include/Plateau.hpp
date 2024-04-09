@@ -21,6 +21,7 @@ private:
 	const int m_minPiecesForShift = 2;
 	int m_score;
 	int m_size;
+	int m_shiftTentatives = 6;
 	Node *m_tail = nullptr;
 	Piece *m_nextPieceToInsert;
 	ColorInfo *m_colorInfo;
@@ -38,6 +39,7 @@ public:
 	int getScore();
 	int getSize();
 	int getUpletSize();
+	int getShiftTentetives();
 
 	void setNodes(Node *);
 	void setColors(ColorInfo *);
@@ -46,6 +48,11 @@ public:
 	void setScore(int);
 	void setSize(int);
 	void setUpletSize(int);
+	void setShiftTentetives(int);
+
+	void increaseScore(int level);
+	void updateScores();
+
 	void insertNodeToSide(Side side);
 	bool canPerformShift(_Color color);
 	void shiftByColor(_Color);
@@ -53,7 +60,6 @@ public:
 	bool checkForUplet();
 	void deleteUplet();
 	void deleteSideUplet(Side side);
-	void increaseScore(int level);
 	bool checkSideUplet(Side side);
 	void LoadSavedPlateau(std::string);
 	void savePlateauToFile(const std::string &filename);

@@ -59,6 +59,11 @@ int Plateau::getUpletSize()
 	return m_upletSize;
 }
 
+int Plateau::getShiftTentetives()
+{
+	return m_shiftTentatives;
+}
+
 void Plateau::setNodes(Node *nodes)
 {
 	m_tail = nodes;
@@ -77,6 +82,11 @@ void Plateau::setForms(FormInfo *formInfo)
 void Plateau::setScore(int score)
 {
 	m_score = score;
+}
+
+void Plateau::setShiftTentetives(int value)
+{
+	m_shiftTentatives = value;
 }
 
 void Plateau::increaseScore(int level)
@@ -900,7 +910,7 @@ void Plateau::savePlateauToFile(const std::string &filename)
 		std::cerr << "Error: Unable to open file for writing." << std::endl;
 		return;
 	}
-	outFile << m_upletSize << std::endl;
+	outFile << m_upletSize << " " << m_shiftTentatives << std::endl;
 	outFile << m_score << " " << m_size << std::endl;
 	if (this->getSize() != 0)
 	{
@@ -927,13 +937,14 @@ void Plateau::LoadPlateauFromFile(const std::string &filename)
 		return;
 	}
 	clearNodesList();
-	int score, size, upletSize;
-	inFile >> upletSize;
+	int score, size, upletSize, shiftTentatives;
+	inFile >> upletSize >> shiftTentatives;
 	inFile >> score >> size;
 	setScore(score);
 	setSize(0);
 	setUpletSize(upletSize);
-
+	setShiftTentetives(shiftTentatives);
+	
 	for (int i = 0; i < size; i++)
 	{
 		int color, form;

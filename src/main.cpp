@@ -37,6 +37,11 @@ int main(void)
 			plateau->setUpletSize(level + 1);
 			break;
 		}
+		case RECORDED_SCORES:
+		{
+			drawScores();
+			break;
+		}
 		}
 	} while (selectedOption != EXIT);
 	CloseWindow();
