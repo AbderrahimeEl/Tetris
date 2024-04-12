@@ -1,5 +1,5 @@
 #include "../include/Plateau.hpp"
-#include <stdlib.h>
+#include <iostream>
 
 Plateau::Plateau(int max_size)
 	: MAX_SIZE(max_size), m_score(0), m_size(0), m_colorInfo(new ColorInfo[4]), m_formInfo(new FormInfo[4])
@@ -7,7 +7,7 @@ Plateau::Plateau(int max_size)
 	m_nextPieceToInsert = generateNextPiece();
 }
 
-Plateau::Plateau(int max_size, int score, int size, Node* tail, Piece* nextPieceToInsert, ColorInfo* colorInfo, FormInfo* formInfo)
+Plateau::Plateau(int max_size, int score, int size, Node *tail, Piece *nextPieceToInsert, ColorInfo *colorInfo, FormInfo *formInfo)
 	: MAX_SIZE(max_size), m_score(score), m_tail(tail), m_size(size)
 {
 }
@@ -20,17 +20,17 @@ Plateau::~Plateau()
 	delete[] m_formInfo;
 }
 
-Node* Plateau::getNodes() const
+Node *Plateau::getNodes() const
 {
 	return m_tail;
 }
 
-ColorInfo* Plateau::getColors() const
+ColorInfo *Plateau::getColors() const
 {
 	return m_colorInfo;
 }
 
-FormInfo* Plateau::getForms() const
+FormInfo *Plateau::getForms() const
 {
 	return m_formInfo;
 }
@@ -40,7 +40,7 @@ int Plateau::getScore() const
 	return m_score;
 }
 
-Piece* Plateau::getNextPieceToInsert() const
+Piece *Plateau::getNextPieceToInsert() const
 {
 	return m_nextPieceToInsert;
 }
@@ -50,17 +50,17 @@ int Plateau::getSize() const
 	return m_size;
 }
 
-void Plateau::setNodes(Node* nodes)
+void Plateau::setNodes(Node *nodes)
 {
 	m_tail = nodes;
 }
 
-void Plateau::setColors(ColorInfo* colorInfo)
+void Plateau::setColors(ColorInfo *colorInfo)
 {
 	m_colorInfo = colorInfo;
 }
 
-void Plateau::setForms(FormInfo* formInfo)
+void Plateau::setForms(FormInfo *formInfo)
 {
 	m_formInfo = formInfo;
 }
@@ -75,7 +75,7 @@ void Plateau::increaseScoreBy(int value)
 	m_score += value;
 }
 
-void Plateau::setNextPieceToInsert(Piece* piece)
+void Plateau::setNextPieceToInsert(Piece *piece)
 {
 	m_nextPieceToInsert = piece;
 }
@@ -85,7 +85,7 @@ void Plateau::setSize(int size)
 	m_size = size;
 }
 
-Piece* Plateau::generateNextPiece()
+Piece *Plateau::generateNextPiece()
 {
 	int randomColor = rand() % 4;
 	int randomForm = rand() % 4;
@@ -93,20 +93,23 @@ Piece* Plateau::generateNextPiece()
 	return new Piece(static_cast<Color>(randomColor), static_cast<Form>(randomForm));
 }
 
-int Plateau::getMaxSize() const {
+int Plateau::getMaxSize() const
+{
 	return MAX_SIZE;
 }
 
-// Insertion
-void Plateau::insertNodeToSide(Side side)
+void Plateau::insertNode(Side side)
 {
 	if (m_size >= MAX_SIZE || m_size < 0)
 	{
 		return;
 	}
 
-	Node* insertedNode = new Node();
+	Node *insertedNode = new Node();
 	insertedNode->setPiece(m_nextPieceToInsert);
+
+	Color color = insertedNode->getPiece()->getColor();
+	Form form = insertedNode->getPiece()->getForm();
 
 	if (m_size == 0)
 	{
@@ -118,17 +121,15 @@ void Plateau::insertNodeToSide(Side side)
 		insertedNode->setNextColor(insertedNode);
 		insertedNode->setPreviousColor(insertedNode);
 
-		int index = static_cast<int>(insertedNode->getPiece()->getColor());
-		m_colorInfo[index].setFirstElement(insertedNode);
-		m_colorInfo[index].incrementNumberOfElements();
+		m_colorInfo[color].setFirstElement(insertedNode);
+		m_colorInfo[color].incrementNumberOfElements();
 
 		// (3) update forms lists
 		insertedNode->setNextForm(insertedNode);
 		insertedNode->setPreviousForm(insertedNode);
 
-		index = static_cast<int>(insertedNode->getPiece()->getForm());
-		m_formInfo[index].setFirstElement(insertedNode);
-		m_formInfo[index].incrementNumberOfElements();
+		m_formInfo[form].setFirstElement(insertedNode);
+		m_formInfo[form].incrementNumberOfElements();
 
 		m_size++;
 		m_nextPieceToInsert = generateNextPiece();
@@ -140,254 +141,70 @@ void Plateau::insertNodeToSide(Side side)
 	insertedNode->setNextNode(m_tail->getNextNode());
 	m_tail->setNextNode(insertedNode);
 
-	if (side == Side::RIGHT)
+	if (side == RIGHT)
 	{
 		m_tail = insertedNode;
 	}
 
 	// (2) update colors lists
-	int index = static_cast<int>(insertedNode->getPiece()->getColor());
-
-	if (m_colorInfo[index].getNumberOfElements() == 0)
+	if (m_colorInfo[color].getNumberOfElements() == 0)
 	{
-		m_colorInfo[index].setFirstElement(insertedNode);
+		m_colorInfo[color].setFirstElement(insertedNode);
 
 		insertedNode->setNextColor(insertedNode);
 		insertedNode->setPreviousColor(insertedNode);
 	}
 	else
 	{
-		insertedNode->setNextColor(m_colorInfo[index].getFirstElement()->getNextColor());
-		m_colorInfo[index].getFirstElement()->getNextColor()->setPreviousColor(insertedNode);
-		m_colorInfo[index].getFirstElement()->setNextColor(insertedNode);
-		insertedNode->setPreviousColor(m_colorInfo[index].getFirstElement());
+		insertedNode->setPreviousColor(m_colorInfo[color].getFirstElement()->getPreviousColor());
+		m_colorInfo[color].getFirstElement()->getPreviousColor()->setNextColor(insertedNode);
+		insertedNode->setNextColor(m_colorInfo[color].getFirstElement());
+		m_colorInfo[color].getFirstElement()->setPreviousColor(insertedNode);
 
-		if (side == Side::RIGHT)
+		if (side == LEFT)
 		{
-			m_colorInfo[index].setFirstElement(insertedNode);
+			m_colorInfo[color].setFirstElement(insertedNode);
 		}
 	}
 
-	m_colorInfo[index].incrementNumberOfElements();
+	m_colorInfo[color].incrementNumberOfElements();
 
 	// (3) update forms lists
-	index = static_cast<int>(insertedNode->getPiece()->getForm());
-
-	if (m_formInfo[index].getNumberOfElements() == 0)
+	if (m_formInfo[form].getNumberOfElements() == 0)
 	{
-		m_formInfo[index].setFirstElement(insertedNode);
+		m_formInfo[form].setFirstElement(insertedNode);
 
 		insertedNode->setNextForm(insertedNode);
 		insertedNode->setPreviousForm(insertedNode);
 	}
 	else
 	{
-		insertedNode->setNextForm(m_formInfo[index].getFirstElement()->getNextForm());
-		m_formInfo[index].getFirstElement()->getNextForm()->setPreviousForm(insertedNode);
-		m_formInfo[index].getFirstElement()->setNextForm(insertedNode);
-		insertedNode->setPreviousForm(m_formInfo[index].getFirstElement());
+		insertedNode->setPreviousForm(m_formInfo[form].getFirstElement()->getPreviousForm());
+		m_formInfo[form].getFirstElement()->getPreviousForm()->setNextForm(insertedNode);
+		insertedNode->setNextForm(m_formInfo[form].getFirstElement());
+		m_formInfo[form].getFirstElement()->setPreviousForm(insertedNode);
 
-		if (side == Side::RIGHT)
+		if (side == LEFT)
 		{
-			m_formInfo[index].setFirstElement(insertedNode);
+			m_formInfo[form].setFirstElement(insertedNode);
 		}
 	}
 
-	m_formInfo[index].incrementNumberOfElements();
-
+	m_formInfo[form].incrementNumberOfElements();
 
 	m_size++;
+	this->deleteUplet();
+
 	m_nextPieceToInsert = generateNextPiece();
-}
-
-bool Plateau::checkSideUplet(Side side)
-{
-	Node* node = side == Side::RIGHT ? node = m_tail : node = m_tail->getNextNode();
-
-	int colorIndex = static_cast<int>(node->getPiece()->getColor());
-	int formIndex = static_cast<int>(node->getPiece()->getForm());
-
-	bool hasMinimumSameColor = m_colorInfo[colorIndex].getNumberOfElements() >= m_upletSize ? true : false;
-	bool hasMinimumSameForm = m_formInfo[formIndex].getNumberOfElements() >= m_upletSize ? true : false;
-
-	// Check if we have enough pieces of the same color or shape to create an uplet
-	if (!(hasMinimumSameColor || hasMinimumSameForm))
-	{
-		return false;
-	}
-
-	bool isColorUplet = true;
-	bool isFormUplet = true;
-
-	if (side == Side::RIGHT)
-	{
-		if (hasMinimumSameColor)
-		{
-			Node* current = m_tail;
-
-			for (int i = 0; i < m_upletSize - 1; i++)
-			{
-				if (current->getPreviousColor()->getNextNode() == current)
-				{
-					current = current->getPreviousColor();
-				}
-				else
-				{
-					isColorUplet = false;
-					break;
-				}
-			}
-		}
-		else
-		{
-			isColorUplet = false;
-		}
-
-		if (hasMinimumSameForm)
-		{
-			Node* current = m_tail;
-
-			for (int i = 0; i < m_upletSize - 1; i++)
-			{
-				if (current->getPreviousForm()->getNextNode() == current)
-				{
-					current = current->getPreviousForm();
-				}
-				else
-				{
-					isFormUplet = false;
-					break;
-				}
-			}
-		}
-		else
-		{
-			isFormUplet = false;
-		}
-
-		return isColorUplet || isFormUplet;
-	}
-	else
-	{
-		if (hasMinimumSameColor)
-		{
-			Node* current = m_tail->getNextNode();
-
-			for (int i = 0; i < m_upletSize - 1; i++)
-			{
-				if (current->getNextColor() == current->getNextNode())
-				{
-					current = current->getNextNode();
-				}
-				else
-				{
-					isColorUplet = false;
-					break;
-				}
-			}
-		}
-		else
-		{
-			isColorUplet = false;
-		}
-
-		if (hasMinimumSameForm)
-		{
-			Node* current = m_tail->getNextNode();
-
-			for (int i = 0; i < m_upletSize - 1; i++)
-			{
-				if (current->getNextForm() == current->getNextNode())
-				{
-					current = current->getNextNode();
-				}
-				else
-				{
-					isFormUplet = false;
-					break;
-				}
-			}
-		}
-		else
-		{
-			isFormUplet = false;
-		}
-
-		return isColorUplet || isFormUplet;
-	}
-}
-
-// Deletion
-void Plateau::deleteSideUplet(Side side)
-{
-	if (m_upletSize > m_size)
-	{
-		return;
-	}
-
-	if (m_upletSize == m_size)
-	{
-		clearNodesList();
-		return;
-	}
-
-	Node* rightMostDeleteNode = nullptr;
-	Node* leftMostDeleteNode = nullptr;
-
-	setDeletedNodesBounds(&leftMostDeleteNode, &rightMostDeleteNode, side);
-
-	// update colors/forms and formInfo/colorInfo lists
-	bool isColorUplet = this->isColorUplet(side);
-
-	if (isColorUplet)
-	{
-		updateColorUpletColors(side, leftMostDeleteNode, rightMostDeleteNode);
-		updateColorUpletForms(leftMostDeleteNode, rightMostDeleteNode);
-	}
-	else
-	{
-		updateFormUpletForms(side, leftMostDeleteNode, rightMostDeleteNode);
-		updateFormUpletColors(leftMostDeleteNode, rightMostDeleteNode);
-	}
-
-	// update nodes list and the tail
-	if (side == Side::RIGHT)
-	{
-		Node* new_tail = m_tail;
-		for (int i = 0; i < m_size - m_upletSize; i++)
-		{
-			new_tail = new_tail->getNextNode();
-		}
-
-		new_tail->setNextNode(m_tail->getNextNode());
-		m_tail->setNextNode(nullptr);
-
-		m_tail = new_tail;
-	}
-	else if (side == Side::LEFT)
-	{
-		Node* new_head = rightMostDeleteNode->getNextNode();
-		m_tail->setNextNode(new_head);
-	}
-
-	m_size -= m_upletSize;
-
-	// free memory
-	for (int i = 0; i < m_upletSize; i++)
-	{
-		Node* next = leftMostDeleteNode->getNextNode();
-		delete leftMostDeleteNode;
-		leftMostDeleteNode = next;
-	}
 }
 
 void Plateau::clearNodesList()
 {
 	// clear nodes list
-	Node* current = m_tail;
+	Node *current = m_tail;
 	for (int i = 0; i < m_size; i++)
 	{
-		Node* next = current->getNextNode();
+		Node *next = current->getNextNode();
 		delete current;
 		current = next;
 	}
@@ -405,330 +222,413 @@ void Plateau::clearNodesList()
 	}
 }
 
-void Plateau::setDeletedNodesBounds(Node** leftMostDeleteNode, Node** rightMostDeleteNode, Side side)
-{
-	bool isColorUplet = this->isColorUplet(side);
-
-	if (side == Side::RIGHT)
-	{
-		*rightMostDeleteNode = m_tail;
-		*leftMostDeleteNode = m_tail;
-
-		for (int i = 0; i < m_upletSize - 1; i++)
-		{
-			*leftMostDeleteNode = isColorUplet ? (*leftMostDeleteNode)->getPreviousColor() : (*leftMostDeleteNode)->getPreviousForm();
-		}
-	}
-	else if (side == Side::LEFT)
-	{
-		*rightMostDeleteNode = m_tail->getNextNode();
-		*leftMostDeleteNode = m_tail->getNextNode();
-
-		for (int i = 0; i < m_upletSize - 1; i++)
-		{
-			*rightMostDeleteNode = isColorUplet ? (*rightMostDeleteNode)->getNextColor() : (*rightMostDeleteNode)->getNextForm();
-		}
-	}
-}
-
-bool Plateau::isColorUplet(Side side)
-{
-	bool isColorUplet = true;
-
-	if (side == Side::RIGHT)
-	{
-		Node* current = m_tail;
-
-		for (int i = 0; i < m_upletSize - 1; i++)
-		{
-			if (current->getPreviousColor()->getNextNode() != current)
-			{
-				isColorUplet = false;
-				break;
-			}
-
-			current = current->getPreviousColor();
-		}
-	}
-	else if (side == Side::LEFT)
-	{
-		// head 
-		Node* current = m_tail->getNextNode();
-
-		for (int i = 0; i < m_upletSize - 1; i++)
-		{
-			if (current->getNextColor() != current->getNextNode())
-			{
-				isColorUplet = false;
-				break;
-			}
-
-			current = current->getNextColor();
-		}
-	}
-
-	return isColorUplet;
-}
-
-// ColorUplet
-void Plateau::updateColorUpletColors(Side side, Node*& leftMostDeleteNode, Node*& rightMostDeleteNode)
-{
-	Color color = rightMostDeleteNode->getPiece()->getColor();
-
-	if (rightMostDeleteNode == m_colorInfo[color].getFirstElement()
-		&& leftMostDeleteNode == m_colorInfo[color].getFirstElement()->getNextColor())
-	{
-		// cas 1 - tous les pieces de cette couleur seront supprimer dans cette uplet
-		m_colorInfo[color].setNumberOfElements(0);
-		m_colorInfo[color].setFirstElement(nullptr);
-	}
-	else
-	{
-		// cas 2 - il existe encore des pieces de cette couleur dans le plateau
-		leftMostDeleteNode->getPreviousColor()->setNextColor(rightMostDeleteNode->getNextColor());
-		rightMostDeleteNode->getNextColor()->setPreviousColor(leftMostDeleteNode->getPreviousColor());
-
-		if (side == Side::RIGHT)
-		{
-			m_colorInfo[color].setFirstElement(leftMostDeleteNode->getPreviousColor());
-		}
-
-		int count = m_colorInfo[color].getNumberOfElements();
-		m_colorInfo[color].setNumberOfElements(count - m_upletSize);
-	}
-}
-
-void Plateau::updateColorUpletForms(Node*& leftMostDeleteNode, Node*& rightMostDeleteNode) {
-	bool updatedSquare = false;
-	bool updatedTriangle = false;
-	bool updatedCircle = false;
-	bool updatedRhombus = false;
-
-	Node* current = leftMostDeleteNode;
-	while (current != rightMostDeleteNode->getNextNode())
-	{
-		Form form = current->getPiece()->getForm();
-
-		if (!updatedCircle && form == Form::CIRCLE
-			|| (updatedCircle && form == Form::CIRCLE && m_formInfo[form].getFirstElement() == current))
-		{
-			updateDeletedForms(current, leftMostDeleteNode, rightMostDeleteNode);
-			updatedCircle = true;
-		}
-		if (!updatedSquare && form == Form::SQUARE
-			|| (updatedSquare && form == Form::SQUARE && m_formInfo[form].getFirstElement() == current))
-		{
-			updateDeletedForms(current, leftMostDeleteNode, rightMostDeleteNode);
-			updatedSquare = true;
-		}
-		if (!updatedRhombus && form == Form::RHOMBUS
-			|| (updatedRhombus && form == Form::RHOMBUS && m_formInfo[form].getFirstElement() == current))
-		{
-
-			updateDeletedForms(current, leftMostDeleteNode, rightMostDeleteNode);
-			updatedRhombus = true;
-		}
-		if (!updatedTriangle && form == Form::TRIANGLE
-			|| (updatedTriangle && form == Form::TRIANGLE && m_formInfo[form].getFirstElement() == current))
-		{
-			updateDeletedForms(current, leftMostDeleteNode, rightMostDeleteNode);
-			updatedTriangle = true;
-		}
-
-		current = current->getNextNode();
-	}
-}
-
-void Plateau::updateDeletedForms(Node* current, Node* leftMostDeleteNode, Node* rightMostDeleteNode)
-{
-	Form form = current->getPiece()->getForm();
-
-	if (m_formInfo[form].getNumberOfElements() == 1)
-	{
-		// cas 1 - la seule piece avec cette form sur le plateau
-		m_formInfo[form].setNumberOfElements(0);
-		m_formInfo[form].setFirstElement(nullptr);
-	}
-	else if (rightMostDeleteNode == m_formInfo[form].getFirstElement()
-		&& (current == m_formInfo[form].getFirstElement()->getNextForm() || current->getNextForm() == leftMostDeleteNode))
-	{
-		// cas 2 - toutes les pieces de cette forme existe dedent l'uplet a supprimer
-		if (current == m_formInfo[form].getFirstElement())
-		{
-			m_formInfo[form].setNumberOfElements(0);
-			m_formInfo[form].setFirstElement(nullptr);
-		}
-	}
-	else
-	{
-		// cas 3 - multiple pieces de cette form dans l'uplet
-		// update formInfo
-		int numberOfDeletedPieces = 1;
-		Node* pieceCounterCursor = current;
-		Node* lastDeletedForm = current;
-
-		while (pieceCounterCursor != rightMostDeleteNode)
-		{
-			pieceCounterCursor = pieceCounterCursor->getNextNode();
-
-			if (pieceCounterCursor->getPiece()->getForm() == form)
-			{
-				numberOfDeletedPieces++;
-				lastDeletedForm = pieceCounterCursor;
-			}
-		}
-
-		current->getPreviousForm()->setNextForm(lastDeletedForm->getNextForm());
-		lastDeletedForm->getNextForm()->setPreviousForm(current->getPreviousForm());
-
-		m_formInfo[form].setFirstElement(current->getPreviousForm());
-		m_formInfo[form].setNumberOfElements(m_formInfo[form].getNumberOfElements() - numberOfDeletedPieces);
-	
-	if (m_formInfo[form].getNumberOfElements() == 0)
-	{
-		m_formInfo[form].setFirstElement(nullptr);
-	}
-}
-}
-
-// FormUplet
-void Plateau::updateFormUpletForms(Side side, Node*& leftMostDeleteNode, Node*& rightMostDeleteNode)
-{
-	if (rightMostDeleteNode == m_formInfo[rightMostDeleteNode->getPiece()->getForm()].getFirstElement()
-		&& leftMostDeleteNode->getPreviousForm() == m_formInfo[rightMostDeleteNode->getPiece()->getForm()].getFirstElement())
-	{
-		// cas 1 - tous les pieces de cette couleur seront supprimer dans cette uplet
-		m_formInfo[leftMostDeleteNode->getPiece()->getForm()].setNumberOfElements(0);
-		m_formInfo[leftMostDeleteNode->getPiece()->getForm()].setFirstElement(nullptr);
-	}
-	else
-	{
-		// cas 2 - il existe encore des pieces de cette couleur dans le plateau
-		leftMostDeleteNode->getPreviousForm()->setNextForm(rightMostDeleteNode->getNextForm());
-		rightMostDeleteNode->getNextForm()->setPreviousForm(leftMostDeleteNode->getPreviousForm());
-
-		if (Side::RIGHT)
-		{
-			// update colorsInfo list
-			m_formInfo[leftMostDeleteNode->getPiece()->getForm()].setFirstElement(leftMostDeleteNode->getPreviousForm());
-		}
-
-		int count = m_formInfo[leftMostDeleteNode->getPiece()->getForm()].getNumberOfElements();
-		m_formInfo[leftMostDeleteNode->getPiece()->getForm()].setNumberOfElements(count - m_upletSize);
-	}
-}
-
-void Plateau::updateFormUpletColors(Node*& leftMostDeleteNode, Node*& rightMostDeleteNode) {
-	bool updatedRed = false;
-	bool updatedGreen = false;
-	bool updatedBlue = false;
-	bool updatedYellow = false;
-
-	Node* current = leftMostDeleteNode;
-	while (current != rightMostDeleteNode->getNextNode())
-	{
-		Color color = current->getPiece()->getColor();
-
-		if (!updatedRed && color == Color::RED
-			|| (updatedRed && color == Color::RED && m_colorInfo[color].getFirstElement() == current))
-		{
-			updateDeletedColors(current, leftMostDeleteNode, rightMostDeleteNode);
-			updatedRed = true;
-		}
-		if (!updatedGreen && color == Color::GREEN
-			|| (updatedGreen && color == Color::GREEN && m_colorInfo[color].getFirstElement() == current))
-		{
-			updateDeletedColors(current, leftMostDeleteNode, rightMostDeleteNode);
-			updatedGreen = true;
-		}
-		if (!updatedBlue && color == Color::BLUE
-			|| (updatedBlue && color == Color::BLUE && m_colorInfo[color].getFirstElement() == current))
-		{
-			updateDeletedColors(current, leftMostDeleteNode, rightMostDeleteNode);
-			updatedBlue = true;
-		}
-		if (!updatedYellow && color == Color::YELLOW
-			|| (updatedYellow && color == Color::YELLOW && m_colorInfo[color].getFirstElement() == current))
-		{
-			updateDeletedColors(current, leftMostDeleteNode, rightMostDeleteNode);
-			updatedYellow = true;
-		}
-
-		current = current->getNextNode();
-	}
-}
-
-void Plateau::updateDeletedColors(Node* current, Node* leftMostDeleteNode, Node* rightMostDeleteNode)
-{
-	Color color = current->getPiece()->getColor();
-
-	if (m_colorInfo[color].getNumberOfElements() == 1)
-	{
-		// cas 1 - la seule piece avec cette form sur le plateau
-		m_colorInfo[color].setNumberOfElements(0);
-		m_colorInfo[color].setFirstElement(nullptr);
-	}
-	else if (rightMostDeleteNode == m_colorInfo[color].getFirstElement()
-		&& (current == m_colorInfo[color].getFirstElement()->getNextColor() || current->getNextColor() == leftMostDeleteNode))
-	{
-		// cas 2 - toutes les pieces de cette forme existe dedent l'uplet a supprimer
-		if (current == m_colorInfo[color].getFirstElement())
-		{
-			m_colorInfo[color].setNumberOfElements(0);
-			m_colorInfo[color].setFirstElement(nullptr);
-		}
-	}
-	else
-	{
-		// cas 3 - multiple pieces de cette form dans l'uplet
-		// update formInfo
-		int numberOfDeletedPieces = 1;
-		Node* pieceCounterCursor = current;
-		Node* lastDeletedColor = current;
-
-		while (pieceCounterCursor != rightMostDeleteNode)
-		{
-			pieceCounterCursor = pieceCounterCursor->getNextNode();
-
-			if (pieceCounterCursor->getPiece()->getColor() == color)
-			{
-				numberOfDeletedPieces++;
-				lastDeletedColor = pieceCounterCursor;
-			}
-		}
-
-		current->getPreviousColor()->setNextColor(lastDeletedColor->getNextColor());
-		lastDeletedColor->getNextColor()->setPreviousColor(current->getPreviousColor());
-
-		m_colorInfo[color].setFirstElement(current->getPreviousColor());
-		m_colorInfo[color].setNumberOfElements(m_colorInfo[color].getNumberOfElements() - numberOfDeletedPieces);
-	
-		if (m_colorInfo[color].getNumberOfElements() == 0)
-		{
-			m_colorInfo[color].setFirstElement(nullptr);
-		}
-	}
-}
-
-// Shift
 bool Plateau::canPerformShift()
 {
-	return false;
+	return m_size <= MAX_SIZE;
 }
 
-void Plateau::shiftByColor(Color)
+void Plateau::updateUpletColor(Node *leftUplet, Node *rightUplet)
 {
+	Color color = leftUplet->getPiece()->getColor();
+	Form form;
+	int numberOfElements = m_colorInfo[color].getNumberOfElements();
+
+	// Update Colors
+	if (numberOfElements == m_upletSize)
+	{
+		m_colorInfo[color].setFirstElement(nullptr);
+		m_colorInfo[color].setNumberOfElements(0);
+	}
+	else
+	{
+		rightUplet->getNextColor()->setPreviousColor(leftUplet->getPreviousColor());
+		leftUplet->getPreviousColor()->setNextColor(rightUplet->getNextColor());
+
+		if (leftUplet == m_colorInfo[color].getFirstElement())
+		{
+			m_colorInfo[color].setFirstElement(rightUplet->getNextColor());
+		}
+
+		m_colorInfo[color].setNumberOfElements(numberOfElements - m_upletSize);
+	}
+
+	// Update Forms
+	Node *temp = leftUplet;
+	for (int i = 0; i < m_upletSize; i++)
+	{
+		form = temp->getPiece()->getForm();
+		if (m_formInfo[form].getNumberOfElements() == 1)
+		{
+			m_formInfo[form].setFirstElement(nullptr);
+			m_formInfo[form].setNumberOfElements(0);
+		}
+		else
+		{
+			temp->getPreviousForm()->setNextForm(temp->getNextForm());
+			temp->getNextForm()->setPreviousForm(temp->getPreviousForm());
+
+			if (temp == m_formInfo[form].getFirstElement())
+			{
+				m_formInfo[form].setFirstElement(temp->getNextForm());
+			}
+
+			m_formInfo[form].decrementNumberOfElements();
+		}
+		temp = temp->getNextNode();
+	}
 }
 
-void Plateau::shiftByForm(Form)
+void Plateau::updateUpletForm(Node *leftUplet, Node *rightUplet)
 {
+	Form form = leftUplet->getPiece()->getForm();
+	Color color;
+	int numberOfElements = m_formInfo[form].getNumberOfElements();
+
+	// Update Forms
+	if (numberOfElements == m_upletSize)
+	{
+		m_formInfo[form].setFirstElement(nullptr);
+		m_formInfo[form].setNumberOfElements(0);
+	}
+	else
+	{
+		rightUplet->getNextForm()->setPreviousForm(leftUplet->getPreviousForm());
+		leftUplet->getPreviousForm()->setNextForm(rightUplet->getNextForm());
+
+		if (leftUplet == m_formInfo[form].getFirstElement())
+		{
+			m_formInfo[form].setFirstElement(rightUplet->getNextForm());
+		}
+
+		m_formInfo[form].setNumberOfElements(numberOfElements - m_upletSize);
+	}
+
+	// Update Colors
+	Node *temp = leftUplet;
+	for (int i = 0; i < m_upletSize; i++)
+	{
+		color = temp->getPiece()->getColor();
+		if (m_colorInfo[color].getNumberOfElements() == 1)
+		{
+			m_colorInfo[color].setFirstElement(nullptr);
+			m_colorInfo[color].setNumberOfElements(0);
+		}
+		else
+		{
+			temp->getPreviousColor()->setNextColor(temp->getNextColor());
+			temp->getNextColor()->setPreviousColor(temp->getPreviousColor());
+
+			if (temp == m_colorInfo[color].getFirstElement())
+			{
+				m_colorInfo[color].setFirstElement(temp->getNextColor());
+			}
+
+			m_colorInfo[color].decrementNumberOfElements();
+		}
+		temp = temp->getNextNode();
+	}
 }
 
-bool Plateau::checkForUplet()
+void Plateau::updateUpletColorForm(Node *leftUplet, Node *rightUplet)
 {
-	return false;
+	Color color = leftUplet->getPiece()->getColor();
+	Form form = leftUplet->getPiece()->getForm();
+	int numberOfElementsColor = m_colorInfo[color].getNumberOfElements();
+	int numberOfElementsForm = m_formInfo[form].getNumberOfElements();
+
+	// Update Colors
+	if (numberOfElementsColor == m_upletSize)
+	{
+		m_colorInfo[color].setFirstElement(nullptr);
+		m_colorInfo[color].setNumberOfElements(0);
+	}
+	else
+	{
+		rightUplet->getNextColor()->setPreviousColor(leftUplet->getPreviousColor());
+		leftUplet->getPreviousColor()->setNextColor(rightUplet->getNextColor());
+
+		if (leftUplet == m_colorInfo[color].getFirstElement())
+		{
+			m_colorInfo[color].setFirstElement(rightUplet->getNextColor());
+		}
+
+		m_colorInfo[color].setNumberOfElements(numberOfElementsColor - m_upletSize);
+	}
+
+	// Update Forms
+	if (numberOfElementsForm == m_upletSize)
+	{
+		m_formInfo[form].setFirstElement(nullptr);
+		m_formInfo[form].setNumberOfElements(0);
+	}
+	else
+	{
+		rightUplet->getNextForm()->setPreviousForm(leftUplet->getPreviousForm());
+		leftUplet->getPreviousForm()->setNextForm(rightUplet->getNextForm());
+
+		if (leftUplet == m_formInfo[form].getFirstElement())
+		{
+			m_formInfo[form].setFirstElement(rightUplet->getNextForm());
+		}
+
+		m_formInfo[form].setNumberOfElements(numberOfElementsForm - m_upletSize);
+	}
+}
+
+void Plateau::clearUplet(Node *leftUplet)
+{
+	Node *current = leftUplet;
+	Node *next;
+	for (int i = 0; i < m_upletSize; i++)
+	{
+		next = current->getNextNode();
+		delete current;
+		current = next;
+	}
 }
 
 void Plateau::deleteUplet()
 {
+	if (m_size < m_upletSize)
+	{
+		return;
+	}
+
+	Node *beforeUplet = m_tail;
+	Node *leftUplet = m_tail->getNextNode();
+	Node *rightUplet;
+
+	bool isColorUplet;
+	bool isFormUplet;
+	Side side;
+	int i = 1;
+
+	while (i <= m_size - m_upletSize + 1)
+	{
+		isColorUplet = this->isColorUplet(leftUplet, &rightUplet);
+		isFormUplet = this->isFormUplet(leftUplet, &rightUplet);
+
+		if (isColorUplet || isFormUplet)
+		{
+			if (m_size == m_upletSize)
+			{
+				clearNodesList();
+				return;
+			}
+
+			if (rightUplet == m_tail)
+			{
+				side = RIGHT;
+			}
+			else
+			{
+				side = LEFT;
+			}
+
+			// Update nodes list
+			beforeUplet->setNextNode(rightUplet->getNextNode());
+			if (side == RIGHT)
+			{
+				m_tail = beforeUplet;
+			}
+
+			// Update colorInfo and formInfo
+			if (isColorUplet && isFormUplet)
+			{
+				updateUpletColorForm(leftUplet, rightUplet);
+			}
+			else if (isColorUplet)
+			{
+				updateUpletColor(leftUplet, rightUplet);
+			}
+			else if (isFormUplet)
+			{
+				updateUpletForm(leftUplet, rightUplet);
+			}
+
+			// Clear uplet
+			clearUplet(leftUplet);
+
+			// Update size
+			m_size -= m_upletSize;
+
+			leftUplet = m_tail;
+			i = 0;
+		}
+
+		beforeUplet = leftUplet;
+		leftUplet = leftUplet->getNextNode();
+		i++;
+	}
+}
+
+bool Plateau::isColorUplet(Node *leftUplet, Node **rightUplet)
+{
+	Node *current = leftUplet;
+	Color color = leftUplet->getPiece()->getColor();
+	for (int i = 1; i < m_upletSize; i++)
+	{
+		current = current->getNextNode();
+		if (current->getPiece()->getColor() != color)
+		{
+			return false;
+		}
+	}
+	*rightUplet = current;
+	return true;
+}
+
+bool Plateau::isFormUplet(Node *leftUplet, Node **rightUplet)
+{
+	Node *current = leftUplet;
+	Form form = leftUplet->getPiece()->getForm();
+	for (int i = 1; i < m_upletSize; i++)
+	{
+		current = current->getNextNode();
+		if (current->getPiece()->getForm() != form)
+		{
+			return false;
+		}
+	}
+	*rightUplet = current;
+	return true;
+}
+
+void Plateau::shiftByColor(Color color)
+{
+	if (!canPerformShift())
+	{
+		return;
+	}
+
+	int numberElements = m_colorInfo[color].getNumberOfElements();
+	if (numberElements <= 1)
+	{
+		return;
+	}
+
+	Node *current = m_colorInfo[color].getFirstElement();
+	Node *next;
+	for (int i = 1; i < numberElements; i++)
+	{
+		next = current->getNextColor();
+		swapPiece(current, next, Shift::COLOR);
+		current = next;
+	}
+
+	this->deleteUplet();
+}
+
+void Plateau::shiftByForm(Form form)
+{
+	if (!canPerformShift())
+	{
+		return;
+	}
+
+	int numberElements = m_formInfo[form].getNumberOfElements();
+	if (numberElements <= 1)
+	{
+		return;
+	}
+
+	Node *current = m_formInfo[form].getFirstElement();
+	Node *next;
+	for (int i = 1; i < numberElements; i++)
+	{
+		next = current->getNextForm();
+		swapPiece(current, next, Shift::FORM);
+		current = next;
+	}
+
+	this->deleteUplet();
+}
+
+void Plateau::swapPiece(Node *node1, Node *node2, Shift shift)
+{
+	int numberOfElements1, numberOfElements2;
+	if (shift == Shift::COLOR)
+	{
+		if (node1 == m_formInfo[node1->getPiece()->getForm()].getFirstElement())
+		{
+			m_formInfo[node1->getPiece()->getForm()].setFirstElement(node2);
+		}
+
+		if (node2 == m_formInfo[node2->getPiece()->getForm()].getFirstElement())
+		{
+			m_formInfo[node2->getPiece()->getForm()].setFirstElement(node1);
+		}
+
+		numberOfElements1 = m_formInfo[node1->getPiece()->getForm()].getNumberOfElements();
+		numberOfElements2 = m_formInfo[node2->getPiece()->getForm()].getNumberOfElements();
+
+		Node *firstNode = (numberOfElements1 == 1) ? node1 : node2;
+		Node *secondNode = (numberOfElements1 == 1) ? node2 : node1;
+
+		secondNode->getPreviousForm()->setNextForm(firstNode);
+		secondNode->getNextForm()->setPreviousForm(firstNode);
+
+		if (numberOfElements1 == 1 || numberOfElements2 == 1)
+		{
+			firstNode->setPreviousForm(secondNode->getPreviousForm());
+			firstNode->setNextForm(secondNode->getNextForm());
+		}
+		else
+		{
+			firstNode->getPreviousForm()->setNextForm(secondNode);
+			firstNode->getNextForm()->setPreviousForm(secondNode);
+
+			Node *save = secondNode->getPreviousForm();
+			secondNode->setPreviousForm(firstNode->getPreviousForm());
+			firstNode->setPreviousForm(save);
+
+			save = secondNode->getNextForm();
+			secondNode->setNextForm(firstNode->getNextForm());
+			firstNode->setNextForm(save);
+		}
+	}
+	else if (shift == Shift::FORM)
+	{
+		if (node1 == m_colorInfo[node1->getPiece()->getColor()].getFirstElement())
+		{
+			m_colorInfo[node1->getPiece()->getColor()].setFirstElement(node2);
+		}
+
+		if (node2 == m_colorInfo[node2->getPiece()->getColor()].getFirstElement())
+		{
+			m_colorInfo[node2->getPiece()->getColor()].setFirstElement(node1);
+		}
+
+		numberOfElements1 = m_colorInfo[node1->getPiece()->getColor()].getNumberOfElements();
+		numberOfElements2 = m_colorInfo[node2->getPiece()->getColor()].getNumberOfElements();
+
+		Node *firstNode = (numberOfElements1 == 1) ? node1 : node2;
+		Node *secondNode = (numberOfElements1 == 1) ? node2 : node1;
+
+		secondNode->getPreviousColor()->setNextColor(firstNode);
+		secondNode->getNextColor()->setPreviousColor(firstNode);
+
+		if (numberOfElements1 == 1 || numberOfElements2 == 1)
+		{
+			firstNode->setPreviousColor(secondNode->getPreviousColor());
+			firstNode->setNextColor(secondNode->getNextColor());
+		}
+		else
+		{
+			firstNode->getPreviousColor()->setNextColor(secondNode);
+			firstNode->getNextColor()->setPreviousColor(secondNode);
+
+			Node *save = secondNode->getPreviousColor();
+			secondNode->setPreviousColor(firstNode->getPreviousColor());
+			firstNode->setPreviousColor(save);
+
+			save = secondNode->getNextColor();
+			secondNode->setNextColor(firstNode->getNextColor());
+			firstNode->setNextColor(save);
+		}
+	}
+
+	Piece *temp = node1->getPiece();
+	node1->setPiece(node2->getPiece());
+	node2->setPiece(temp);
 }

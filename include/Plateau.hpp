@@ -6,59 +6,65 @@
 #include "ColorInfo.hpp"
 #include "FormInfo.hpp"
 
-enum Side { LEFT, RIGHT };
+enum Side
+{
+	LEFT,
+	RIGHT
+};
+
+enum Shift
+{
+	COLOR,
+	FORM
+};
 
 class Plateau
 {
 private:
 	const int MAX_SIZE;
-	const int m_upletSize = 2;
+	const int m_upletSize = 3;
 	int m_score;
 	int m_size;
-	Node* m_tail = nullptr;
-	Piece* m_nextPieceToInsert;
-	ColorInfo* m_colorInfo;
-	FormInfo* m_formInfo;
+	Node *m_tail = nullptr;
+	Piece *m_nextPieceToInsert;
+	ColorInfo *m_colorInfo;
+	FormInfo *m_formInfo;
 
 public:
 	Plateau(int max_size);
-	Plateau(int max_size, int score, int size, Node* tail, Piece* nextPieceToInsert, ColorInfo* colorInfo, FormInfo* formInfo);
+	Plateau(int max_size, int score, int size, Node *tail, Piece *nextPieceToInsert, ColorInfo *colorInfo, FormInfo *formInfo);
 	~Plateau();
-	Node* getNodes() const;
-	ColorInfo* getColors() const;
-	FormInfo* getForms() const;
-	Piece* getNextPieceToInsert() const;
+	Node *getNodes() const;
+	ColorInfo *getColors() const;
+	FormInfo *getForms() const;
+	Piece *getNextPieceToInsert() const;
 	int getMaxSize() const;
 	int getScore() const;
 	int getSize() const;
 
-	void setNodes(Node*);
-	void setColors(ColorInfo*);
-	void setForms(FormInfo*);
-	void setNextPieceToInsert(Piece*);
+	void setNodes(Node *);
+	void setColors(ColorInfo *);
+	void setForms(FormInfo *);
+	void setNextPieceToInsert(Piece *);
 	void setScore(int);
 	void setSize(int);
-	void insertNodeToSide(Side side);
+	void insertNode(Side side);
+	void increaseScoreBy(int value);
 	bool canPerformShift();
 	void shiftByColor(Color);
 	void shiftByForm(Form);
-	bool checkForUplet();
+	void swapPiece(Node *, Node *, Shift);
 	void deleteUplet();
-	void deleteSideUplet(Side side);
-	void increaseScoreBy(int value);
-	bool checkSideUplet(Side side);
+	bool isColorUplet(Node *, Node **);
+	bool isFormUplet(Node *, Node **);
 
 private:
-	Piece* generateNextPiece();
-	void updateDeletedForms(Node* temp, Node* current, Node* rightMostDeleteNode = nullptr);
-	void updateDeletedColors(Node* temp, Node* current, Node* rightMostDeleteNode = nullptr);
-	bool isColorUplet(Side side);
+	Piece *generateNextPiece();
 	void clearNodesList();
-	void setDeletedNodesBounds(Node** leftBound, Node** rightBound, Side side);
-	void updateColorUpletForms(Node*& leftMostDeleteNode, Node*& rightMostDeleteNode);
-	void updateFormUpletColors(Node*& leftMostDeleteNode, Node*& rightMostDeleteNode);
-	void updateColorUpletColors(Side side, Node*& leftMostDeleteNode, Node*& rightMostDeleteNode);
-	void updateFormUpletForms(Side side, Node*& leftMostDeleteNode, Node*& rightMostDeleteNode);
+	void clearUplet(Node *);
+	void updateUpletColor(Node *, Node *);
+	void updateUpletForm(Node *, Node *);
+	void updateUpletColorForm(Node *, Node *);
 };
 
 #endif
