@@ -211,6 +211,11 @@ DifficultyLevel DrawDifficultyMenu(int screenWidth, int screenHeight)
 			EndDrawing();
 			return selectedLevel;
 		}
+		if (IsKeyPressed(KEY_Q))
+		{
+			EndDrawing();
+			return MEDIUM;
+		}
 		EndDrawing();
 	}
 	return selectedLevel;
@@ -226,7 +231,7 @@ void DrawYouLose(int score)
 		DrawText("YOU LOSE", (1000 - MeasureText("YOU LOSE", 40)) / 2, 150, 40, RED);
 		DrawText(TextFormat("YOUR SCORE %d", score), (1000 - MeasureText(TextFormat("YOUR SCORE %d", score), 40)) / 2, 250, 40, BLACK);
 		DrawText("Press enter to return", (1000 - MeasureText("Press enter to return", 20)) / 2, 400, 20, BLACK);
-		if (IsKeyPressed(KEY_ENTER))
+		if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_Q))
 		{
 			EndDrawing();
 			UnloadTexture(background);
@@ -380,7 +385,7 @@ void drawScores()
 			DrawText((std::to_string(s.second) + "   -   " + s.first).c_str(), 400, y, 20, BLACK);
 			y += 30;
 		}
-		if (IsKeyPressed(KEY_ENTER))
+		if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_Q))
 		{
 			EndDrawing();
 			return;
@@ -406,4 +411,107 @@ int getLastScore()
 		file.close();
 	}
 	return lastScore;
+}
+void drawControls()
+{
+	const int screenWidth = 1000;
+	const int screenHeight = 500;
+	const int fontSize = 20;
+	const int lineHeight = 30;
+
+	const char *controls[] = {
+		"  - Use Left and Right arrow keys to insert the next piece",
+		"  - Press B to shift by blue color",
+		"  - Press G to shift by green color",
+		"  - Press R to shift by red color",
+		"  - Press Y to shift by yellow color",
+		"  - Press C to shift by circle form",
+		"  - Press S to shift by square form",
+		"  - Press T to shift by triangle form",
+		"  - Press D to shift by diamond form"};
+
+	while (!WindowShouldClose())
+	{
+		int posY = (screenHeight - (sizeof(controls) / sizeof(controls[0])) * lineHeight) / 2;
+		BeginDrawing();
+		ClearBackground(RAYWHITE);
+
+		DrawText("Controls", 100, posY, fontSize, RED);
+		posY += lineHeight;
+
+		for (const auto &control : controls)
+		{
+			DrawText(control, 100, posY, fontSize, BLACK);
+			posY += lineHeight;
+		}
+
+		if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_Q))
+		{
+			EndDrawing();
+			return;
+		}
+		EndDrawing();
+	}
+}
+void drawRules()
+{
+	const int screenWidth = 1000;
+	const int screenHeight = 500;
+	const int fontSize = 20;
+	const int lineHeight = 30;
+	const int maxLinesPerPage = (screenHeight - 100) / lineHeight; // Calculate max lines per page based on screen height
+
+	const char *controls[] = {
+		"The goal of the game is to create uplets of shapes or colors",
+		"(square, triangle, diamond, circle)(red, green, yellow, blue).",
+		"Each uplet you create, earns you points. The number of points ",
+		"you earn depends on the difficulty level you choose.",
+		"Easy:",
+		"Uplet size: 2",
+		"Maximum pieces on the plateau: 6",
+		"Points awarded per uplet: 4",
+		"Medium:",
+		"Uplet size: 3",
+		"Maximum pieces on the plateau: 10",
+		"Points awarded per uplet: 8",
+		"Hard:",
+		"Uplet size: 4",
+		"Maximum pieces on the plateau: 10",
+		"Points awarded per uplet: 8",
+		"Once you reach the maximum size of the plateau, you can only shift the pieces six times.",
+		"If you fail to create any uplets within these shifts, the game will end."};
+
+	int scrollPosition = 0;
+
+	while (!WindowShouldClose())
+	{
+		BeginDrawing();
+		ClearBackground(RAYWHITE);
+
+		// Draw title
+		DrawText("Rules", 50, 50, fontSize, RED);
+
+		// Draw controls within the visible portion of the screen
+		int posY = 100;
+		for (int i = scrollPosition; i < scrollPosition + maxLinesPerPage && i < sizeof(controls) / sizeof(controls[0]); ++i)
+		{
+			DrawText(controls[i], 50, posY, fontSize, BLACK);
+			posY += lineHeight;
+		}
+
+		if (IsKeyDown(KEY_DOWN) && scrollPosition + maxLinesPerPage < sizeof(controls) / sizeof(controls[0]))
+		{
+			scrollPosition++;
+		}
+		if (IsKeyDown(KEY_UP) && scrollPosition > 0)
+		{
+			scrollPosition--;
+		}
+		if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_Q))
+		{
+			EndDrawing();
+			return;
+		}
+		EndDrawing();
+	}
 }

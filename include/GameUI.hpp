@@ -15,8 +15,8 @@ enum MenuOption
 {
     START_GAME,
     LOAD_SAVED_GAME,
-    GAME_RULES,
     GAME_CONTROLS,
+    GAME_RULES,
     LEVEL,
     RECORDED_SCORES,
     EXIT
@@ -41,5 +41,6 @@ DifficultyLevel DrawDifficultyMenu(int screenWidth, int screenHeight);
 char *drawUserInput(int score);
 void updateScores(const char *name, int score);
 int getLastScore();
-
+void drawControls();
+void drawRules();
 #endif

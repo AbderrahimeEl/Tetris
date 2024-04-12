@@ -42,6 +42,16 @@ int main(void)
 			drawScores();
 			break;
 		}
+		case GAME_CONTROLS:
+		{
+			drawControls();
+			break;
+		}
+		case GAME_RULES:
+		{
+			drawRules();
+			break;
+		}
 		}
 	} while (selectedOption != EXIT);
 	CloseWindow();
