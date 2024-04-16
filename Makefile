@@ -1,2 +1,2 @@
 all:
-	g++ ./src/*.cpp -I./include -o ./bin/main
+	g++ -g src/*.cpp -Iinclude -o bin/tetris.exe -lraylib -lGL -lm -lpthread -ldl -lrt -lX11

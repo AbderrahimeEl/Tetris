@@ -4,7 +4,7 @@ Piece::Piece()
 {
 }
 
-Piece::Piece(Color color, Form form)
+Piece::Piece(_Color color, Form form)
     : m_color(color), m_form(form)
 {
 }
@@ -13,7 +13,7 @@ Piece::~Piece()
 {
 }
 
-Color Piece::getColor() const
+_Color Piece::getColor() const
 {
     return this->m_color;
 }
@@ -23,7 +23,7 @@ Form Piece::getForm() const
     return this->m_form;
 }
 
-void Piece::setColor(Color color)
+void Piece::setColor(_Color color)
 {
     this->m_color = color;
 }

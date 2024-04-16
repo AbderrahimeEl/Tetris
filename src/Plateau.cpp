@@ -1,4 +1,6 @@
 #include "../include/Plateau.hpp"
+#include <string>
+#include <fstream>
 #include <iostream>
 
 Plateau::Plateau(int max_size)
@@ -35,7 +37,7 @@ FormInfo *Plateau::getForms() const
 	return m_formInfo;
 }
 
-int Plateau::getScore() const
+int Plateau::getScore()
 {
 	return m_score;
 }
@@ -45,9 +47,19 @@ Piece *Plateau::getNextPieceToInsert() const
 	return m_nextPieceToInsert;
 }
 
-int Plateau::getSize() const
+int Plateau::getSize()
 {
 	return m_size;
+}
+
+int Plateau::getUpletSize()
+{
+	return m_upletSize;
+}
+
+int Plateau::getShiftTentetives()
+{
+	return m_shiftTentatives;
 }
 
 void Plateau::setNodes(Node *nodes)
@@ -70,9 +82,27 @@ void Plateau::setScore(int score)
 	m_score = score;
 }
 
-void Plateau::increaseScoreBy(int value)
+void Plateau::setShiftTentetives(int value)
 {
-	m_score += value;
+	m_shiftTentatives = value;
+}
+
+void Plateau::increaseScore(int level)
+{
+	switch (level)
+	{
+	case 1:
+		m_score += 5;
+		break;
+	case 2:
+		m_score += 10;
+		break;
+	case 3:
+		m_score += 20;
+		break;
+	default:
+		break;
+	}
 }
 
 void Plateau::setNextPieceToInsert(Piece *piece)
@@ -85,12 +115,17 @@ void Plateau::setSize(int size)
 	m_size = size;
 }
 
+void Plateau::setUpletSize(int Upletsize)
+{
+	m_upletSize = Upletsize;
+}
+
 Piece *Plateau::generateNextPiece()
 {
 	int randomColor = rand() % 4;
 	int randomForm = rand() % 4;
 
-	return new Piece(static_cast<Color>(randomColor), static_cast<Form>(randomForm));
+	return new Piece(static_cast<_Color>(randomColor), static_cast<Form>(randomForm));
 }
 
 int Plateau::getMaxSize() const
@@ -108,7 +143,7 @@ void Plateau::insertNode(Side side)
 	Node *insertedNode = new Node();
 	insertedNode->setPiece(m_nextPieceToInsert);
 
-	Color color = insertedNode->getPiece()->getColor();
+	_Color color = insertedNode->getPiece()->getColor();
 	Form form = insertedNode->getPiece()->getForm();
 
 	if (m_size == 0)
@@ -229,7 +264,7 @@ bool Plateau::canPerformShift()
 
 void Plateau::updateUpletColor(Node *leftUplet, Node *rightUplet)
 {
-	Color color = leftUplet->getPiece()->getColor();
+	_Color color = leftUplet->getPiece()->getColor();
 	Form form;
 	int numberOfElements = m_colorInfo[color].getNumberOfElements();
 
@@ -281,7 +316,7 @@ void Plateau::updateUpletColor(Node *leftUplet, Node *rightUplet)
 void Plateau::updateUpletForm(Node *leftUplet, Node *rightUplet)
 {
 	Form form = leftUplet->getPiece()->getForm();
-	Color color;
+	_Color color;
 	int numberOfElements = m_formInfo[form].getNumberOfElements();
 
 	// Update Forms
@@ -331,7 +366,7 @@ void Plateau::updateUpletForm(Node *leftUplet, Node *rightUplet)
 
 void Plateau::updateUpletColorForm(Node *leftUplet, Node *rightUplet)
 {
-	Color color = leftUplet->getPiece()->getColor();
+	_Color color = leftUplet->getPiece()->getColor();
 	Form form = leftUplet->getPiece()->getForm();
 	int numberOfElementsColor = m_colorInfo[color].getNumberOfElements();
 	int numberOfElementsForm = m_formInfo[form].getNumberOfElements();
@@ -465,7 +500,7 @@ void Plateau::deleteUplet()
 bool Plateau::isColorUplet(Node *leftUplet, Node **rightUplet)
 {
 	Node *current = leftUplet;
-	Color color = leftUplet->getPiece()->getColor();
+	_Color color = leftUplet->getPiece()->getColor();
 	for (int i = 1; i < m_upletSize; i++)
 	{
 		current = current->getNextNode();
@@ -494,7 +529,7 @@ bool Plateau::isFormUplet(Node *leftUplet, Node **rightUplet)
 	return true;
 }
 
-void Plateau::shiftByColor(Color color)
+void Plateau::shiftByColor(_Color color)
 {
 	if (!canPerformShift())
 	{
@@ -631,4 +666,61 @@ void Plateau::swapPiece(Node *node1, Node *node2, Shift shift)
 	Piece *temp = node1->getPiece();
 	node1->setPiece(node2->getPiece());
 	node2->setPiece(temp);
+}
+// save plateau information to file
+void Plateau::savePlateauToFile(const std::string &filename)
+{
+	if (this->getScore() == 0 && this->getSize() == 0)
+		return;
+	std::ofstream outFile(filename);
+
+	if (!outFile.is_open())
+	{
+		std::cerr << "Error: Unable to open file for writing." << std::endl;
+		return;
+	}
+	outFile << m_upletSize << " " << m_shiftTentatives << std::endl;
+	outFile << m_score << " " << m_size << std::endl;
+	if (this->getSize() != 0)
+	{
+		Node *currentNode = m_tail->getNextNode();
+		do
+		{
+			Piece *piece = currentNode->getPiece();
+			outFile << piece->getColor() << " " << piece->getForm() << std::endl;
+			currentNode = currentNode->getNextNode();
+		} while (currentNode != m_tail->getNextNode());
+		clearNodesList();
+	}
+	this->setScore(0);
+	outFile.close();
+}
+
+// Read plateau information from file
+void Plateau::LoadPlateauFromFile(const std::string &filename)
+{
+	std::ifstream inFile(filename);
+	if (!inFile.is_open())
+	{
+		std::cerr << "Error: Unable to open file for reading." << std::endl;
+		return;
+	}
+	clearNodesList();
+	int score, size, upletSize, shiftTentatives;
+	inFile >> upletSize >> shiftTentatives;
+	inFile >> score >> size;
+	setScore(score);
+	setSize(0);
+	setUpletSize(upletSize);
+	setShiftTentetives(shiftTentatives);
+
+	for (int i = 0; i < size; i++)
+	{
+		int color, form;
+		inFile >> color >> form;
+		Piece *piece = new Piece(static_cast<_Color>(color), static_cast<Form>(form));
+		setNextPieceToInsert(piece);
+		insertNode(Side::RIGHT);
+	}
+	inFile.close();
 }
