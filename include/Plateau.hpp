@@ -5,6 +5,7 @@
 #include "Node.hpp"
 #include "ColorInfo.hpp"
 #include "FormInfo.hpp"
+#include <string>
 
 enum Side
 {
@@ -22,9 +23,11 @@ class Plateau
 {
 private:
 	const int MAX_SIZE;
-	const int m_upletSize = 3;
+	int m_upletSize = 3;
+	const int m_minPiecesForShift = 2;
 	int m_score;
 	int m_size;
+	int m_shiftTentatives = 6;
 	Node *m_tail = nullptr;
 	Piece *m_nextPieceToInsert;
 	ColorInfo *m_colorInfo;
@@ -39,8 +42,10 @@ public:
 	FormInfo *getForms() const;
 	Piece *getNextPieceToInsert() const;
 	int getMaxSize() const;
-	int getScore() const;
-	int getSize() const;
+	int getScore();
+	int getSize();
+	int getUpletSize();
+	int getShiftTentetives();
 
 	void setNodes(Node *);
 	void setColors(ColorInfo *);
@@ -48,15 +53,23 @@ public:
 	void setNextPieceToInsert(Piece *);
 	void setScore(int);
 	void setSize(int);
+	void setUpletSize(int);
+	void setShiftTentetives(int);
+
+	void increaseScore(int level);
+	void updateScores();
+
 	void insertNode(Side side);
-	void increaseScoreBy(int value);
 	bool canPerformShift();
-	void shiftByColor(Color);
+	void shiftByColor(_Color);
 	void shiftByForm(Form);
 	void swapPiece(Node *, Node *, Shift);
 	void deleteUplet();
 	bool isColorUplet(Node *, Node **);
 	bool isFormUplet(Node *, Node **);
+	void LoadSavedPlateau(std::string);
+	void savePlateauToFile(const std::string &filename);
+	void LoadPlateauFromFile(const std::string &filename);
 
 private:
 	Piece *generateNextPiece();
