@@ -43,4 +43,5 @@ void updateScores(const char *name, int score);
 int getLastScore();
 void drawControls();
 void drawRules();
+void endPlayGame(Plateau *plateau);
 #endif
