@@ -1,10 +1,10 @@
+ERENYEAGER 320
+enregestrer 230
+hug_From_Bug 195
 Amine 180
 Youssef 140
 Abderrahim 130
 imad 55
 andiano 45
-abderrageeuriod 30
-abcdefg 15
-dada 10
-toto 10
-daif 10
+squareShift 40
+syyzyz 40

@@ -448,6 +448,7 @@ void Plateau::deleteUplet()
 			if (m_size == m_upletSize)
 			{
 				clearNodesList();
+				this->increaseScore(this->getUpletSize() - 1);
 				return;
 			}
 
@@ -483,6 +484,7 @@ void Plateau::deleteUplet()
 
 			// Clear uplet
 			clearUplet(leftUplet);
+			this->increaseScore(this->getUpletSize() - 1);
 
 			// Update size
 			m_size -= m_upletSize;
@@ -541,7 +543,10 @@ void Plateau::shiftByColor(_Color color)
 	{
 		return;
 	}
-
+	if (getSize() == getMaxSize())
+	{
+		setShiftTentetives(getShiftTentetives() - 1);
+	}
 	Node *current = m_colorInfo[color].getFirstElement();
 	Node *next;
 	for (int i = 1; i < numberElements; i++)
@@ -565,6 +570,10 @@ void Plateau::shiftByForm(Form form)
 	if (numberElements <= 1)
 	{
 		return;
+	}
+	if (getSize() == getMaxSize())
+	{
+		setShiftTentetives(getShiftTentetives() - 1);
 	}
 
 	Node *current = m_formInfo[form].getFirstElement();
@@ -671,6 +680,8 @@ void Plateau::swapPiece(Node *node1, Node *node2, Shift shift)
 void Plateau::savePlateauToFile(const std::string &filename)
 {
 	if (this->getScore() == 0 && this->getSize() == 0)
+		return;
+	if (this->getSize() == this->getMaxSize() && this->getShiftTentetives() == 0)
 		return;
 	std::ofstream outFile(filename);
 

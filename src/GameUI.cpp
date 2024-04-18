@@ -107,7 +107,21 @@ void playGame(Plateau *plateau)
 			} while (temp != plateau->getNodes());
 		}
 		EndDrawing();
-
+		if (plateau->getSize() == plateau->getMaxSize() && plateau->getShiftTentetives() == 0)
+		{
+			if (plateau->getScore() <= minScore)
+				DrawYouLose(plateau->getScore());
+			else
+			{
+				char *name = drawUserInput(plateau->getScore());
+				updateScores(name, plateau->getScore());
+			}
+			goto unload;
+		}
+		if (plateau->getShiftTentetives() < 6)
+		{
+			plateau->setShiftTentetives(6);
+		}
 		int key = GetKeyPressed();
 		switch (key)
 		{
@@ -119,24 +133,30 @@ void playGame(Plateau *plateau)
 			side = Side::RIGHT;
 			plateau->insertNode(side);
 			break;
-		case KEY_LEFT_SHIFT:
-			if (plateau->getSize() == plateau->getMaxSize())
-			{
-				plateau->setShiftTentetives(plateau->getShiftTentetives() - 1);
-			}
-			if (plateau->getSize() == plateau->getMaxSize() && plateau->getShiftTentetives() == 0)
-			{
-				if (plateau->getScore() <= minScore)
-					DrawYouLose(plateau->getScore());
-				else
-				{
-					char *name = drawUserInput(plateau->getScore());
-					updateScores(name, plateau->getScore());
-				}
-				goto unload;
-			}
+		case KEY_S:
+			plateau->shiftByForm(Form::SQUARE);
 			break;
-
+		case KEY_D:
+			plateau->shiftByForm(Form::DIAMOND);
+			break;
+		case KEY_T:
+			plateau->shiftByForm(Form::TRIANGLE);
+			break;
+		case KEY_C:
+			plateau->shiftByForm(Form::CIRCLE);
+			break;
+		case KEY_R:
+			plateau->shiftByColor(_Color::_RED);
+			break;
+		case KEY_G:
+			plateau->shiftByColor(_Color::_GREEN);
+			break;
+		case KEY_B:
+			plateau->shiftByColor(_Color::_BLUE);
+			break;
+		case KEY_Y:
+			plateau->shiftByColor(_Color::_YELLOW);
+			break;
 		case KEY_Q:
 			if (plateau->getScore() > minScore)
 			{
@@ -505,4 +525,8 @@ void drawRules()
 		}
 		EndDrawing();
 	}
+}
+
+void endPlayGame(Plateau *plateau)
+{
 }
