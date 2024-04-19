@@ -5,7 +5,9 @@
 #include "Node.hpp"
 #include "ColorInfo.hpp"
 #include "FormInfo.hpp"
-#include <string>
+#include <iostream>
+
+using namespace std;
 
 enum Side
 {
@@ -34,8 +36,8 @@ private:
 	FormInfo *m_formInfo;
 
 public:
-	Plateau(int max_size);
-	Plateau(int max_size, int score, int size, Node *tail, Piece *nextPieceToInsert, ColorInfo *colorInfo, FormInfo *formInfo);
+	Plateau(int);
+	Plateau(int, int, int, Node *, Piece *, ColorInfo *, FormInfo *);
 	~Plateau();
 	Node *getNodes() const;
 	ColorInfo *getColors() const;
@@ -56,10 +58,12 @@ public:
 	void setUpletSize(int);
 	void setShiftTentetives(int);
 
-	void increaseScore(int level);
+	void increaseScore(int);
 	void updateScores();
+	void addNode2ColorList(Node *);
+	void addNode2FormList(Node *);
 
-	void insertNode(Side side);
+	void insertNode(Side);
 	bool canPerformShift();
 	void shiftByColor(_Color);
 	void shiftByForm(Form);
@@ -67,9 +71,9 @@ public:
 	void deleteUplet();
 	bool isColorUplet(Node *, Node **);
 	bool isFormUplet(Node *, Node **);
-	void LoadSavedPlateau(std::string);
-	void savePlateauToFile(const std::string &filename);
-	void LoadPlateauFromFile(const std::string &filename);
+	void LoadSavedPlateau(string);
+	void savePlateauToFile(const string &);
+	void LoadPlateauFromFile(const string &);
 
 private:
 	Piece *generateNextPiece();

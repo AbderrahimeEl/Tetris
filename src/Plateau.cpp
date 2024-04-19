@@ -1,7 +1,5 @@
 #include "../include/Plateau.hpp"
-#include <string>
 #include <fstream>
-#include <iostream>
 
 Plateau::Plateau(int max_size)
 	: MAX_SIZE(max_size), m_score(0), m_size(0), m_colorInfo(new ColorInfo[4]), m_formInfo(new FormInfo[4])
@@ -105,6 +103,48 @@ void Plateau::increaseScore(int level)
 	}
 }
 
+void Plateau::addNode2ColorList(Node *node)
+{
+	_Color color = node->getPiece()->getColor();
+	if (m_colorInfo[color].getNumberOfElements() == 0)
+	{
+		m_colorInfo[color].setFirstElement(node);
+
+		node->setNextColor(node);
+		node->setPreviousColor(node);
+	}
+	else
+	{
+		node->setPreviousColor(m_colorInfo[color].getFirstElement()->getPreviousColor());
+		m_colorInfo[color].getFirstElement()->getPreviousColor()->setNextColor(node);
+		node->setNextColor(m_colorInfo[color].getFirstElement());
+		m_colorInfo[color].getFirstElement()->setPreviousColor(node);
+	}
+
+	m_colorInfo[color].incrementNumberOfElements();
+}
+
+void Plateau::addNode2FormList(Node *node)
+{
+	Form form = node->getPiece()->getForm();
+	if (m_formInfo[form].getNumberOfElements() == 0)
+	{
+		m_formInfo[form].setFirstElement(node);
+
+		node->setNextForm(node);
+		node->setPreviousForm(node);
+	}
+	else
+	{
+		node->setPreviousForm(m_formInfo[form].getFirstElement()->getPreviousForm());
+		m_formInfo[form].getFirstElement()->getPreviousForm()->setNextForm(node);
+		node->setNextForm(m_formInfo[form].getFirstElement());
+		m_formInfo[form].getFirstElement()->setPreviousForm(node);
+	}
+
+	m_formInfo[form].incrementNumberOfElements();
+}
+
 void Plateau::setNextPieceToInsert(Piece *piece)
 {
 	m_nextPieceToInsert = piece;
@@ -182,50 +222,10 @@ void Plateau::insertNode(Side side)
 	}
 
 	// (2) update colors lists
-	if (m_colorInfo[color].getNumberOfElements() == 0)
-	{
-		m_colorInfo[color].setFirstElement(insertedNode);
-
-		insertedNode->setNextColor(insertedNode);
-		insertedNode->setPreviousColor(insertedNode);
-	}
-	else
-	{
-		insertedNode->setPreviousColor(m_colorInfo[color].getFirstElement()->getPreviousColor());
-		m_colorInfo[color].getFirstElement()->getPreviousColor()->setNextColor(insertedNode);
-		insertedNode->setNextColor(m_colorInfo[color].getFirstElement());
-		m_colorInfo[color].getFirstElement()->setPreviousColor(insertedNode);
-
-		if (side == LEFT)
-		{
-			m_colorInfo[color].setFirstElement(insertedNode);
-		}
-	}
-
-	m_colorInfo[color].incrementNumberOfElements();
+	addNode2ColorList(insertedNode);
 
 	// (3) update forms lists
-	if (m_formInfo[form].getNumberOfElements() == 0)
-	{
-		m_formInfo[form].setFirstElement(insertedNode);
-
-		insertedNode->setNextForm(insertedNode);
-		insertedNode->setPreviousForm(insertedNode);
-	}
-	else
-	{
-		insertedNode->setPreviousForm(m_formInfo[form].getFirstElement()->getPreviousForm());
-		m_formInfo[form].getFirstElement()->getPreviousForm()->setNextForm(insertedNode);
-		insertedNode->setNextForm(m_formInfo[form].getFirstElement());
-		m_formInfo[form].getFirstElement()->setPreviousForm(insertedNode);
-
-		if (side == LEFT)
-		{
-			m_formInfo[form].setFirstElement(insertedNode);
-		}
-	}
-
-	m_formInfo[form].incrementNumberOfElements();
+	addNode2FormList(insertedNode);
 
 	m_size++;
 	this->deleteUplet();
@@ -543,10 +543,12 @@ void Plateau::shiftByColor(_Color color)
 	{
 		return;
 	}
+
 	if (getSize() == getMaxSize())
 	{
 		setShiftTentetives(getShiftTentetives() - 1);
 	}
+
 	Node *current = m_colorInfo[color].getFirstElement();
 	Node *next;
 	for (int i = 1; i < numberElements; i++)
@@ -555,6 +557,21 @@ void Plateau::shiftByColor(_Color color)
 		swapPiece(current, next, Shift::COLOR);
 		current = next;
 	}
+
+	// reset formInfoList (firstElement, numberOfElements)
+	for (int i = 0; i < 4; i++)
+	{
+		m_formInfo[i].setFirstElement(nullptr);
+		m_formInfo[i].setNumberOfElements(0);
+	}
+
+	// update forms lists
+	Node *currentNode = m_tail->getNextNode();
+	do
+	{
+		addNode2FormList(currentNode);
+		currentNode = currentNode->getNextNode();
+	} while (currentNode != m_tail->getNextNode());
 
 	this->deleteUplet();
 }
@@ -571,6 +588,7 @@ void Plateau::shiftByForm(Form form)
 	{
 		return;
 	}
+
 	if (getSize() == getMaxSize())
 	{
 		setShiftTentetives(getShiftTentetives() - 1);
@@ -585,97 +603,31 @@ void Plateau::shiftByForm(Form form)
 		current = next;
 	}
 
+	// reset colorInfoList (firstElement, numberOfElements)
+	for (int i = 0; i < 4; i++)
+	{
+		m_colorInfo[i].setFirstElement(nullptr);
+		m_colorInfo[i].setNumberOfElements(0);
+	}
+
+	// update colors lists
+	Node *currentNode = m_tail->getNextNode();
+	do
+	{
+		addNode2ColorList(currentNode);
+		currentNode = currentNode->getNextNode();
+	} while (currentNode != m_tail->getNextNode());
+
 	this->deleteUplet();
 }
 
 void Plateau::swapPiece(Node *node1, Node *node2, Shift shift)
 {
-	int numberOfElements1, numberOfElements2;
-	if (shift == Shift::COLOR)
-	{
-		if (node1 == m_formInfo[node1->getPiece()->getForm()].getFirstElement())
-		{
-			m_formInfo[node1->getPiece()->getForm()].setFirstElement(node2);
-		}
-
-		if (node2 == m_formInfo[node2->getPiece()->getForm()].getFirstElement())
-		{
-			m_formInfo[node2->getPiece()->getForm()].setFirstElement(node1);
-		}
-
-		numberOfElements1 = m_formInfo[node1->getPiece()->getForm()].getNumberOfElements();
-		numberOfElements2 = m_formInfo[node2->getPiece()->getForm()].getNumberOfElements();
-
-		Node *firstNode = (numberOfElements1 == 1) ? node1 : node2;
-		Node *secondNode = (numberOfElements1 == 1) ? node2 : node1;
-
-		secondNode->getPreviousForm()->setNextForm(firstNode);
-		secondNode->getNextForm()->setPreviousForm(firstNode);
-
-		if (numberOfElements1 == 1 || numberOfElements2 == 1)
-		{
-			firstNode->setPreviousForm(secondNode->getPreviousForm());
-			firstNode->setNextForm(secondNode->getNextForm());
-		}
-		else
-		{
-			firstNode->getPreviousForm()->setNextForm(secondNode);
-			firstNode->getNextForm()->setPreviousForm(secondNode);
-
-			Node *save = secondNode->getPreviousForm();
-			secondNode->setPreviousForm(firstNode->getPreviousForm());
-			firstNode->setPreviousForm(save);
-
-			save = secondNode->getNextForm();
-			secondNode->setNextForm(firstNode->getNextForm());
-			firstNode->setNextForm(save);
-		}
-	}
-	else if (shift == Shift::FORM)
-	{
-		if (node1 == m_colorInfo[node1->getPiece()->getColor()].getFirstElement())
-		{
-			m_colorInfo[node1->getPiece()->getColor()].setFirstElement(node2);
-		}
-
-		if (node2 == m_colorInfo[node2->getPiece()->getColor()].getFirstElement())
-		{
-			m_colorInfo[node2->getPiece()->getColor()].setFirstElement(node1);
-		}
-
-		numberOfElements1 = m_colorInfo[node1->getPiece()->getColor()].getNumberOfElements();
-		numberOfElements2 = m_colorInfo[node2->getPiece()->getColor()].getNumberOfElements();
-
-		Node *firstNode = (numberOfElements1 == 1) ? node1 : node2;
-		Node *secondNode = (numberOfElements1 == 1) ? node2 : node1;
-
-		secondNode->getPreviousColor()->setNextColor(firstNode);
-		secondNode->getNextColor()->setPreviousColor(firstNode);
-
-		if (numberOfElements1 == 1 || numberOfElements2 == 1)
-		{
-			firstNode->setPreviousColor(secondNode->getPreviousColor());
-			firstNode->setNextColor(secondNode->getNextColor());
-		}
-		else
-		{
-			firstNode->getPreviousColor()->setNextColor(secondNode);
-			firstNode->getNextColor()->setPreviousColor(secondNode);
-
-			Node *save = secondNode->getPreviousColor();
-			secondNode->setPreviousColor(firstNode->getPreviousColor());
-			firstNode->setPreviousColor(save);
-
-			save = secondNode->getNextColor();
-			secondNode->setNextColor(firstNode->getNextColor());
-			firstNode->setNextColor(save);
-		}
-	}
-
 	Piece *temp = node1->getPiece();
 	node1->setPiece(node2->getPiece());
 	node2->setPiece(temp);
 }
+
 // save plateau information to file
 void Plateau::savePlateauToFile(const std::string &filename)
 {
