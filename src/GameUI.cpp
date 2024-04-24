@@ -118,7 +118,7 @@ void playGame(Plateau *plateau)
 			}
 			goto unload;
 		}
-		if (plateau->getShiftTentetives() < 6)
+		if (plateau->getShiftTentetives() < 6 && plateau->getSize() < plateau->getMaxSize())
 		{
 			plateau->setShiftTentetives(6);
 		}
