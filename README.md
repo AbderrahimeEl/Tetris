@@ -2,6 +2,8 @@
 
 This is a simple Tetris game written in C++ using the [Raylib](https://www.raylib.com/) library.
 
+<video src="explanatory_video.mp4" height="240" controls></video>
+
 ## Features
 
 - **Start New Game**: Allows players to start a new game.
