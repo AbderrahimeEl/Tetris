@@ -2,7 +2,8 @@
 
 This is a simple Tetris game written in C++ using the [Raylib](https://www.raylib.com/) library.
 
-<video src="explanatory_video.mp4" height="240" controls></video>
+https://github.com/AbderrahimeEl/Tetris/assets/145778347/48106c80-370c-4138-9eef-77ba2d52bc0e
+
 
 ## Features
 
